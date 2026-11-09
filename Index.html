@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>¿LLEGAS? · Ruta Segura</title>
+<meta name="description" content="Juego de prevención vial: haz el trayecto del colegio a tu casa, toma seis decisiones y descubre si llegas.">
+<meta property="og:title" content="¿LLEGAS? · Ruta Segura">
+<meta property="og:description" content="Seis decisiones. Una prueba real de reacción. Un solo final. Juego de prevención vial.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0a1310">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f5c518'/%3E%3Ctext x='32' y='43' font-size='30' font-family='Arial' font-weight='bold' text-anchor='middle' fill='%2315261e'%3ERS%3C/text%3E%3C/svg%3E">
+<style>
+:root{--bg:#0a1310;--card:#12221c;--card2:#1a3028;--line:#2a4d3e;--txt:#ecf4ef;--dim:#9db8aa;
+--acc:#f5c518;--ok:#3ecf8e;--bad:#ff5c4d;--mid:#ffb02e}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;color:var(--txt);
+font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+background:radial-gradient(1200px 640px at 50% -12%,#18342a 0%,#0a1310 62%) fixed,#0a1310}
+#app{max-width:820px;margin:0 auto;padding:10px 12px 34px}
+header{display:flex;align-items:center;gap:11px;padding:6px 2px 11px}
+.logo{width:38px;height:38px;border-radius:11px;background:var(--acc);color:#15261e;display:grid;
+place-items:center;font-weight:900;font-size:15px;flex:none;box-shadow:0 6px 18px #f5c51833}
+header b{font-size:16px;letter-spacing:.4px}
+header small{display:block;font-size:11.5px;color:var(--dim)}
+.mute{margin-left:auto;background:#ffffff0d;border:1px solid #ffffff1f;color:var(--txt);border-radius:11px;
+padding:8px 11px;font-size:16px;cursor:pointer}
+#stage{position:relative;width:100%;height:clamp(250px,54vh,500px);border-radius:20px;overflow:hidden;
+background:#05080a;box-shadow:0 24px 60px #0009,0 0 0 1px #ffffff12}
+canvas{display:block;width:100%;height:100%}
+#hud{position:absolute;left:10px;right:10px;top:10px;display:flex;gap:7px;align-items:stretch;pointer-events:none;z-index:3}
+.pill{background:rgba(5,11,9,.6);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);
+border:1px solid #ffffff1c;border-radius:12px;padding:6px 10px;font-size:10.5px;color:#cfe0d7;
+letter-spacing:.4px;text-transform:uppercase;font-weight:700;white-space:nowrap}
+.pill b{display:block;font-size:16px;letter-spacing:0;text-transform:none;color:#fff}
+.mpill{flex:1;min-width:0;position:relative}
+.mrow{display:flex;justify-content:space-between}
+.mbar{height:8px;border-radius:99px;background:#ffffff1f;overflow:hidden;margin-top:6px}
+.mbar i{display:block;height:100%;width:100%;border-radius:99px;transition:width .7s cubic-bezier(.2,.9,.3,1),background .7s}
+.float{position:absolute;right:10px;top:-4px;font-size:15px;font-weight:900;animation:fl 1.5s ease-out forwards;text-transform:none}
+@keyframes fl{0%{opacity:0;transform:translateY(8px)}15%{opacity:1}100%{opacity:0;transform:translateY(-26px)}}
+#chips{position:absolute;left:10px;bottom:10px;display:flex;flex-wrap:wrap;gap:6px;z-index:3;pointer-events:none;max-width:70%}
+.chip{background:rgba(5,11,9,.68);border:1px solid #ffffff22;border-radius:99px;padding:5px 10px;font-size:12px;font-weight:700;
+animation:pop .4s cubic-bezier(.2,.9,.3,1.4) both}
+.chip.r{border-color:#ff5c4d88;color:#ffb3ab}.chip.g{border-color:#3ecf8e88;color:#a8f0cf}
+@keyframes pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+#banner{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;z-index:4;text-align:center;padding:20px}
+#banner span{font-weight:900;font-size:clamp(26px,7vw,60px);line-height:1.05;letter-spacing:.5px;
+text-shadow:0 4px 30px #000,0 0 2px #000;opacity:0;transform:scale(.88);transition:opacity .45s,transform .45s cubic-bezier(.2,.9,.3,1.3)}
+#banner.on span{opacity:1;transform:none}
+#toast{position:absolute;left:50%;bottom:14px;transform:translate(-50%,20px);opacity:0;z-index:6;
+background:rgba(5,11,9,.9);border:1px solid #ffffff26;padding:10px 14px;border-radius:12px;font-size:13.5px;
+width:max-content;max-width:88%;text-align:center;transition:.35s;pointer-events:none}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+.notif{position:absolute;top:62px;left:50%;width:min(360px,86%);transform:translate(-50%,-420%);visibility:hidden;
+transition:transform .5s cubic-bezier(.2,.9,.3,1.25);background:rgba(246,248,247,.97);color:#14261e;border-radius:18px;
+padding:12px 14px;box-shadow:0 14px 44px #000a;z-index:5}
+.notif.on{transform:translate(-50%,0);visibility:visible}
+#modal .notif{visibility:visible}
+.notif .who{font-size:12px;color:#2a6b4b;font-weight:800;display:flex;justify-content:space-between;align-items:center}
+.notif .who i{font-style:normal;color:#7a8b83;font-weight:600}
+.notif .msg{font-size:15.5px;margin-top:4px}
+.notif .typing{margin-top:8px;background:#e6ece9;border-radius:10px;padding:8px 10px;font-size:14.5px;min-height:36px;color:#14261e}
+.notif .typing:after{content:"|";animation:blink 1s steps(1) infinite;color:#2a6b4b;font-weight:700}
+@keyframes blink{50%{opacity:0}}
+#modal{position:fixed;inset:0;z-index:50;display:none;background:rgba(0,0,0,.42);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+#modal.on{display:block}
+#modal .notif{position:absolute;top:18vh;transform:translate(-50%,0);animation:drop .45s cubic-bezier(.2,.9,.3,1.3) both}
+@keyframes drop{from{transform:translate(-50%,-80px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+#modal button{margin-top:10px;width:100%;padding:13px;border-radius:12px;border:0;background:#14261e;color:#fff;font-weight:800;font-size:16px;cursor:pointer}
+#panel{margin-top:12px;scroll-margin-top:10px}
+.card{background:linear-gradient(180deg,#14271f,#0f1d18);border:1px solid var(--line);border-radius:20px;padding:18px;
+animation:in .45s cubic-bezier(.2,.9,.3,1) both;box-shadow:0 14px 34px #0005}
+@keyframes in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.step{font-size:11.5px;color:var(--acc);font-weight:800;letter-spacing:1.1px;text-transform:uppercase;margin-bottom:8px}
+h1{font-size:clamp(30px,6vw,44px);line-height:1.05;margin:0 0 10px;letter-spacing:.3px}
+h2{font-size:clamp(19px,3.8vw,25px);line-height:1.22;margin:0 0 8px}
+p{line-height:1.55;margin:0 0 12px;font-size:15.5px}
+.dim{color:var(--dim);font-size:13.5px}
+.how{list-style:none;padding:0;margin:4px 0 16px;display:grid;gap:8px}
+.how li{background:#ffffff08;border:1px solid #ffffff12;border-radius:12px;padding:10px 12px;font-size:14.5px;line-height:1.45}
+.how b{color:var(--acc)}
+.lbl{display:block;font-weight:700;font-size:14px;margin:4px 0 7px}
+input{width:100%;padding:15px;border-radius:13px;border:1px solid var(--line);background:#0c1814;color:var(--txt);font-size:16px;font-family:inherit;outline:none;transition:border-color .2s}
+input:focus{border-color:var(--acc)}
+.opts{display:grid;gap:9px;margin-top:4px}
+.opt{display:flex;gap:12px;align-items:center;text-align:left;width:100%;padding:14px;border-radius:15px;background:var(--card2);
+border:1px solid var(--line);color:var(--txt);font-size:15.5px;cursor:pointer;line-height:1.35;font-family:inherit;
+transition:transform .15s,border-color .25s,background .25s,opacity .35s}
+@media (hover:hover){.opt:hover{transform:translateY(-2px);border-color:#4a8c70;background:#1e382e}}
+.opt:active{transform:scale(.985)}
+.opt .k{flex:none;width:31px;height:31px;border-radius:9px;background:#0c1814;border:1px solid var(--line);display:grid;place-items:center;
+font-weight:900;font-size:13px;color:var(--acc)}
+.opt.off{opacity:.3;pointer-events:none}
+.opt.sel{pointer-events:none}
+.opt.sel.good{border-color:var(--ok);background:#123629}.opt.sel.mid{border-color:var(--mid);background:#352a10}.opt.sel.bad{border-color:var(--bad);background:#3a1a19}
+.fb{margin-top:12px;border-radius:15px;padding:14px;border:1px solid;animation:in .4s both;font-size:14.5px;line-height:1.55}
+.fb b{display:block;margin-bottom:5px;font-size:14px}
+.fb.good{background:#10322a;border-color:var(--ok)}.fb.mid{background:#33290f;border-color:var(--mid)}.fb.bad{background:#36191a;border-color:var(--bad)}
+.btn{display:block;width:100%;padding:15px;border-radius:14px;border:0;cursor:pointer;font-size:16px;font-weight:800;
+background:var(--acc);color:#15261e;margin-top:10px;font-family:inherit;transition:transform .12s,filter .2s;text-decoration:none;text-align:center}
+.btn:active{transform:scale(.98)}
+@media (hover:hover){.btn:hover{filter:brightness(1.08)}}
+.btn.sec{background:transparent;color:var(--txt);border:1px solid var(--line);font-weight:700}
+.btn.wa{background:#25d366;color:#08311a}
+.btn:disabled{opacity:.4}
+.brake{display:block;width:100%;padding:26px 10px;border-radius:20px;border:0;font-size:clamp(26px,7vw,38px);font-weight:900;color:#fff;
+background:radial-gradient(circle at 50% 30%,#ff7365,#c8251b 70%);box-shadow:0 10px 0 #7d130d,0 22px 44px #ff5c4d40;cursor:pointer;
+letter-spacing:1.5px;margin:8px 0 12px;font-family:inherit;transition:transform .06s,box-shadow .06s;touch-action:manipulation;user-select:none}
+.brake.blue{background:radial-gradient(circle at 50% 30%,#57a8ff,#1d5fc2 70%);box-shadow:0 10px 0 #10356d,0 22px 44px #57a8ff40}
+.brake.hit{transform:translateY(8px);box-shadow:0 2px 0 #7d130d}
+.brake.blue.hit{box-shadow:0 2px 0 #10356d}
+.brake.idle{animation:pulse 1.7s ease-in-out infinite}
+@keyframes pulse{50%{filter:brightness(1.18)}}
+.hint{font-size:12px;color:var(--dim);text-align:center;margin-top:10px}
+kbd{background:#0c1814;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:1px 6px;font-size:11px;font-family:inherit}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.stats div{background:var(--card2);border:1px solid var(--line);border-radius:13px;padding:11px 6px;text-align:center}
+.stats b{display:block;font-size:clamp(17px,4vw,22px);color:var(--acc)}
+.stats span{font-size:11px;color:var(--dim);display:block;margin-top:3px;line-height:1.3}
+.diag{margin:6px 0 14px}
+.diag .t{font-size:12px;color:var(--dim);margin-bottom:6px;display:flex;justify-content:space-between}
+.track{position:relative;height:30px;border-radius:9px;background:#0c1814;border:1px solid var(--line);overflow:hidden;display:flex}
+.track i{display:block;height:100%;width:0;transition:width 1.2s cubic-bezier(.2,.9,.3,1)}
+.track .lim{position:absolute;top:-2px;bottom:-2px;width:3px;background:#fff;box-shadow:0 0 10px #fff}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--dim);margin-top:7px}
+.legend span:before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px;background:var(--c)}
+.ending{border-radius:18px;padding:22px 16px;text-align:center;border:2px solid;margin-bottom:12px;animation:in .6s both}
+.ending .big{font-size:clamp(30px,8vw,48px);font-weight:900;line-height:1.02;margin:6px 0 12px;letter-spacing:.5px}
+.ending p{margin:0;font-size:15px}
+.log{font-size:14px;color:#cfe0d7;line-height:1.5;margin:0 0 8px;padding-left:18px;position:relative}
+.log:before{content:"";position:absolute;left:0;top:7px;width:8px;height:8px;border-radius:99px;background:var(--line)}
+.log.r:before{background:var(--bad)}.log.g:before{background:var(--ok)}.log.m:before{background:var(--mid)}
+.log em{font-style:normal;color:var(--dim);font-size:12.5px}
+.sec-t{font-size:11.5px;color:var(--acc);font-weight:800;letter-spacing:1.1px;text-transform:uppercase;margin:16px 0 9px}
+.bigmsg{font-size:clamp(19px,4.2vw,24px);font-weight:900;color:var(--acc);line-height:1.25;margin:4px 0 10px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.row2 .btn{margin-top:9px}
+footer{text-align:center;font-size:11.5px;color:#7f9a8c;padding:16px 0 0;line-height:1.6}
+@media (max-height:720px){#stage{height:clamp(220px,46vh,420px)}}
+@media (max-width:420px){.pill{padding:5px 8px}.pill b{font-size:14px}.card{padding:15px}.stats{gap:6px}}
+/* ---- cierre para la clase ---- */
+.cie-top{background:#ffffff08;border:1px solid #ffffff14;border-radius:13px;padding:11px 13px;font-size:13.5px;color:var(--dim);line-height:1.5;margin-bottom:14px}
+details.ac{background:#ffffff08;border:1px solid #ffffff14;border-radius:13px;margin-bottom:8px;overflow:hidden}
+details.ac>summary{list-style:none;cursor:pointer;padding:12px 13px;font-weight:700;font-size:14.5px;display:flex;gap:10px;align-items:center;line-height:1.35}
+details.ac>summary::-webkit-details-marker{display:none}
+details.ac>summary:after{content:"+";margin-left:auto;color:var(--acc);font-weight:900;font-size:19px;line-height:1;flex:none}
+details.ac[open]>summary:after{content:"\2013"}
+details.ac>summary .n{flex:none;width:25px;height:25px;border-radius:8px;background:#0c1814;border:1px solid var(--line);color:var(--acc);display:grid;place-items:center;font-size:12px;font-weight:900}
+.acb{padding:0 13px 13px 48px;font-size:14px;line-height:1.55;color:#cfe0d7}
+.acb .rule{display:block;color:var(--acc);font-weight:800;font-size:11.5px;letter-spacing:.8px;text-transform:uppercase;margin-bottom:5px}
+.acb p{font-size:14px;margin:0 0 9px}
+.acb p:last-child{margin:0}
+@media (max-width:420px){.acb{padding-left:13px}}
+.tipg{display:grid;gap:9px;margin-bottom:4px}
+.tip{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:12px 13px;display:flex;gap:11px}
+.tip .ic{flex:none;font-size:19px;line-height:1.2}
+.tip b{display:block;font-size:14.5px;margin-bottom:3px}
+.tip span{font-size:13.5px;color:var(--dim);line-height:1.5;display:block}
+.dist{display:grid;gap:9px;margin:4px 0 8px}
+.dist .r{background:#ffffff08;border:1px solid #ffffff12;border-radius:12px;padding:10px 11px}
+.dist .rh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:14px;font-weight:800;margin-bottom:8px}
+.dist .rh i{font-style:normal;color:var(--dim);font-weight:600;font-size:12px;text-align:right}
+.bars{display:grid;gap:6px}
+.bl{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--dim)}
+.bl>span.t{flex:none;width:46px}
+.bw{flex:1;min-width:0;height:11px;border-radius:99px;background:#ffffff14;overflow:hidden;display:flex}
+.bw i{display:block;height:100%;width:0;transition:width 1.1s cubic-bezier(.2,.9,.3,1)}
+.bl em{font-style:normal;color:var(--txt);font-weight:800;font-size:12.5px;min-width:50px;text-align:right;flex:none}
+.qs{counter-reset:q;list-style:none;padding:0;margin:0 0 4px}
+.qs li{counter-increment:q;position:relative;padding:11px 0 11px 33px;border-bottom:1px solid #ffffff10;font-size:14.5px;line-height:1.5}
+.qs li:last-child{border:0;padding-bottom:0}
+.qs li:before{content:counter(q);position:absolute;left:0;top:11px;width:23px;height:23px;border-radius:7px;background:#0c1814;border:1px solid var(--line);color:var(--acc);font-size:11.5px;font-weight:900;display:grid;place-items:center}
+.pact{display:grid;gap:7px;margin:4px 0 10px}
+.pk{display:flex;gap:11px;align-items:flex-start;background:var(--card2);border:1px solid var(--line);border-radius:13px;padding:12px;cursor:pointer;font-size:14px;line-height:1.45;transition:border-color .2s,background .2s}
+.pk input{appearance:none;-webkit-appearance:none;flex:none;width:23px;height:23px;margin:0;padding:0;border-radius:7px;border:2px solid var(--line);background:#0c1814;position:relative;cursor:pointer}
+.pk input:checked{background:var(--ok);border-color:var(--ok)}
+.pk input:checked:after{content:"\2713";position:absolute;inset:0;display:grid;place-items:center;color:#08311a;font-weight:900;font-size:14px}
+.pk.on{border-color:var(--ok);background:#12332a}
+.guide{display:grid;gap:7px}
+.guide .g{background:#ffffff08;border:1px solid #ffffff12;border-radius:12px;padding:10px 12px;font-size:13.5px;line-height:1.55}
+.guide .g b{color:var(--acc);display:block;font-size:11.5px;letter-spacing:.8px;text-transform:uppercase;margin-bottom:4px}
+.srcs{font-size:11.5px;color:#7f9a8c;line-height:1.65;margin-top:10px}
+.srcs a{color:#9db8aa}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="logo">RS</div>
+    <div><b>¿LLEGAS?</b><small>Ruta Segura · Juego de prevención vial</small></div>
+    <button class="mute" id="mute" aria-label="Sonido">🔊</button>
+  </header>
+
+  <div id="stage">
+    <canvas id="cv"></canvas>
+    <div id="hud">
+      <div class="pill" id="hStep">Paso<b>—</b></div>
+      <div class="pill mpill"><div class="mrow"><span>Margen de seguridad</span><span id="hM">100%</span></div>
+        <div class="mbar"><i id="hBar" style="background:#3ecf8e"></i></div></div>
+      <div class="pill" id="hSpd">Velocidad<b>0 km/h</b></div>
+    </div>
+    <div id="chips"></div>
+    <div class="notif" id="notif"><div class="who"><span>💬 Mamá</span><i>ahora</i></div><div class="msg">¿Ya vienes? 🙂</div><div class="typing" id="typing" style="display:none"></div></div>
+    <div id="banner"><span id="bannerT"></span></div>
+    <div id="toast"></div>
+  </div>
+
+  <section id="panel"></section>
+  <footer>Campaña de prevención vial <b>Ruta Segura</b> · Policía Nacional de Colombia<br>Un segundo de distracción no se devuelve.</footer>
+</div>
+
+<div id="modal"><div class="notif"><div class="who"><span>💬 Mamá</span><i>ahora</i></div>
+<div class="msg">¿Ya casi? Te estoy esperando para comer 🍲</div><button id="mClose">Cerrar notificación</button></div></div>
+
+<script>
+(function(){
+'use strict';
+/* ================= UTILIDADES ================= */
+const $=s=>document.querySelector(s);
+const clamp=(x,a,b)=>Math.max(a===undefined?0:a,Math.min(b===undefined?1:b,x));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const mixC=(a,b,t)=>[lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t)];
+const rgb=(c,a)=>'rgba('+(c[0]|0)+','+(c[1]|0)+','+(c[2]|0)+','+(a===undefined?1:a)+')';
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);
+t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const TM=[];function later(f,ms){const id=setTimeout(f,ms);TM.push(id);return id;}
+function clearTimers(){TM.forEach(clearTimeout);TM.length=0;}
+
+/* ================= AUDIO ================= */
+let muted=false;
+const AU={c:null,
+ init(){ if(this.c)return; const AC=window.AudioContext||window.webkitAudioContext; if(!AC)return;
+  try{
+  const c=this.c=new AC();
+  this.m=c.createGain(); this.m.gain.value=muted?0:0.55;
+  this.lp=c.createBiquadFilter(); this.lp.type='lowpass'; this.lp.frequency.value=16000;
+  this.m.connect(this.lp); this.lp.connect(c.destination);
+  const o=c.createOscillator(); o.type='sawtooth'; o.frequency.value=50;
+  const f=c.createBiquadFilter(); f.type='lowpass'; f.frequency.value=380;
+  const g=c.createGain(); g.gain.value=0; o.connect(f); f.connect(g); g.connect(this.m); o.start();
+  this.eo=o; this.eg=g;
+  const len=c.sampleRate*2,b=c.createBuffer(1,len,c.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<len;i++)d[i]=Math.random()*2-1; this.nb=b;
+  const n=c.createBufferSource(); n.buffer=b; n.loop=true;
+  const bf=c.createBiquadFilter(); bf.type='bandpass'; bf.frequency.value=2600; bf.Q.value=.5;
+  const rg=c.createGain(); rg.gain.value=0; n.connect(bf); bf.connect(rg); rg.connect(this.m); n.start(); this.rg=rg;
+  }catch(e){this.c=null;}
+ },
+ resume(){ if(this.c&&this.c.state==='suspended') this.c.resume(); },
+ engine(kmh,kind){ if(!this.c)return; const t=this.c.currentTime;
+  const on=(kind==='moto'||kind==='bus')&&kmh>0.5;
+  const base=kind==='bus'?34:52, k=kind==='bus'?.55:1.25;
+  this.eo.frequency.setTargetAtTime(base+kmh*k,t,.12);
+  this.eg.gain.setTargetAtTime(on?(kind==='bus'?.05:.065):(kind==='moto'?.02:0),t,.25); },
+ rain(v){ if(!this.c)return; this.rg.gain.setTargetAtTime(v*.11,this.c.currentTime,.7); },
+ muffle(v){ if(!this.c)return; this.lp.frequency.setTargetAtTime(v?420:16000,this.c.currentTime,.25); },
+ vol(m){ if(!this.c)return; this.m.gain.setTargetAtTime(m?0:.55,this.c.currentTime,.05); },
+ tone(fr,dur,type,vol,when){ if(!this.c)return; const c=this.c,t=c.currentTime+(when||0);
+  const o=c.createOscillator(),g=c.createGain(); o.type=type||'sine'; o.frequency.value=fr;
+  g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol||.15,t+.01); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g); g.connect(this.m); o.start(t); o.stop(t+dur+.05); },
+ ping(){ this.tone(880,.13,'sine',.16); this.tone(1320,.18,'sine',.14,.11); },
+ ok(){ [523,659,784,1046].forEach((f,i)=>this.tone(f,.22,'triangle',.12,i*.09)); },
+ horn(){ this.tone(392,.55,'square',.07); this.tone(494,.55,'square',.06); },
+ noise(dur,ftype,freq,vol,sweep){ if(!this.c)return; const c=this.c,t=c.currentTime;
+  const s=c.createBufferSource(); s.buffer=this.nb; const f=c.createBiquadFilter(); f.type=ftype; f.frequency.setValueAtTime(freq,t);
+  if(sweep) f.frequency.exponentialRampToValueAtTime(sweep,t+dur);
+  const g=c.createGain(); g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  s.connect(f); f.connect(g); g.connect(this.m); s.start(t); s.stop(t+dur+.05); },
+ screech(v){ if(!this.c)return; const c=this.c,t=c.currentTime; const o=c.createOscillator(),g=c.createGain();
+  o.type='sawtooth'; o.frequency.setValueAtTime(1900,t); o.frequency.exponentialRampToValueAtTime(900,t+.9);
+  g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.05*(v||1),t+.05); g.gain.exponentialRampToValueAtTime(.0001,t+1);
+  const f=c.createBiquadFilter(); f.type='bandpass'; f.frequency.value=1500; f.Q.value=3;
+  o.connect(f); f.connect(g); g.connect(this.m); o.start(t); o.stop(t+1.1); this.noise(.8,'highpass',3000,.06*(v||1)); },
+ crash(){ this.noise(1.3,'lowpass',1400,.6,120); this.tone(55,.6,'sine',.5); this.noise(.5,'highpass',2500,.25); },
+ whoosh(){ this.noise(.9,'bandpass',600,.25,2400); }
+};
+
+/* ================= ESTADO ================= */
+const G={}, W={}, T={};
+function resetGame(keepName){
+ const nm=keepName?G.name:'';
+ Object.assign(G,{name:nm,route:'',margin:100,log:[],step:0,youHelmet:true,juanHelmet:true,
+  phone:false,audif:false,cross:'',wet:0,speedSet:45,res:null});
+ Object.assign(W,{view:'none',mode:'stand',speed:0,target:0,dist:0,tod:.05,todT:.05,rain:0,rainT:0,wet:0,
+  camX:1.2,camXT:1.2,camRate:2,sway:0,bob:0,bobAmp:0,hazard:null,sign:null,light:null,bus:null,zebra:false,
+  cross:null,amb:[],ambOn:true,shake:0,flash:0,flashC:[255,40,30],dim:0,black:0,blackT:0,wipe:0});
+ Object.assign(T,{on:false});
+ setMargin(100,true); chips(); hud();
+}
+
+/* ================= CANVAS ================= */
+const cv=$('#cv'),ctx=cv.getContext('2d');
+let CW=800,CH=500,DPR=1,HOR=200,FOC=500;
+const CAMH=1.5,ZN=1.5,ZF=420;
+function resize(){ const r=cv.getBoundingClientRect(); DPR=Math.min(2,window.devicePixelRatio||1);
+ CW=r.width>10?r.width:800; CH=r.height>10?r.height:500;
+ cv.width=Math.round(CW*DPR); cv.height=Math.round(CH*DPR); ctx.setTransform(DPR,0,0,DPR,0,0); }
+window.addEventListener('resize',resize);
+
+function P(X,Z){ const s=FOC/Z; return {x:CW/2+(X-W.camX)*s+W.sway,y:HOR+CAMH*s,s:s}; }
+function quad(a,b,c,d,f){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.lineTo(d.x,d.y);ctx.closePath();ctx.fillStyle=f;ctx.fill();}
+function rr(x,y,w,h,r,f){r=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);
+ ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();if(f){ctx.fillStyle=f;ctx.fill();}}
+function glow(x,y,r,c,a){ if(r<1||a<=0.01)return; const g=ctx.createRadialGradient(x,y,0,x,y,r);
+ g.addColorStop(0,rgb(c,a)); g.addColorStop(1,rgb(c,0)); ctx.fillStyle=g; ctx.fillRect(x-r,y-r,2*r,2*r); }
+
+/* ciudad y estrellas (fijas) */
+const CITY=[],STARS=[];
+(function(){const R=rng(11);let x=-.02;while(x<1.03){const w=.025+R()*.05,h=.025+R()*.11,wins=[];
+ const cols=Math.max(1,Math.floor(w*90)),rows=Math.max(1,Math.floor(h*55));
+ for(let i=0;i<cols;i++)for(let j=0;j<rows;j++)if(R()<.45)wins.push([(i+.5)/cols,(j+.5)/rows,R()]);
+ CITY.push({x,w,h,wins});x+=w+.003+R()*.01;}
+ for(let i=0;i<70;i++)STARS.push([R(),R()*.85,R()]);})();
+const DROPS=[];(function(){const R=rng(5);for(let i=0;i<320;i++)DROPS.push({x:R()*1.2-.1,y:R()*1.1,v:.9+R()*.7,l:.6+R()*.6});})();
+
+/* ---- dibujo de objetos ---- */
+function night(){return clamp((W.tod-.3)/.45);}
+function drawPole(X,z){ const b=P(X,z); if(b.y<HOR-2)return; const s=b.s,top=b.y-6.4*s,arm=X>0?-1.3:1.3,tx=b.x+arm*s;
+ ctx.strokeStyle='#232a2e'; ctx.lineWidth=Math.max(1,.14*s); ctx.beginPath(); ctx.moveTo(b.x,b.y); ctx.lineTo(b.x,top); ctx.lineTo(tx,top+.1*s); ctx.stroke();
+ const n=night();
+ if(n>0.02){ glow(tx,top+.25*s,3.2*s,[255,210,140],.55*n);
+  if(W.wet>.05){ const rb=P(X+arm,z); const g=ctx.createLinearGradient(0,rb.y,0,rb.y+9*s);
+   g.addColorStop(0,'rgba(255,210,140,'+(.28*n*W.wet)+')'); g.addColorStop(1,'rgba(255,210,140,0)');
+   ctx.fillStyle=g; ctx.fillRect(rb.x-.4*s,rb.y,.8*s,9*s);} }
+ ctx.fillStyle=n>.1?'#ffe9bf':'#4b5257'; ctx.fillRect(tx-.3*s,top,.6*s,.16*s); }
+
+function drawSign(o){ const b=P(o.X,o.z); if(b.y<HOR)return; const s=b.s,top=b.y-2.7*s;
+ ctx.strokeStyle='#8c9399'; ctx.lineWidth=Math.max(1,.08*s); ctx.beginPath(); ctx.moveTo(b.x,b.y); ctx.lineTo(b.x,top); ctx.stroke();
+ if(o.kind==='escolar'){ const d=.55*s,cx=b.x,cy=top;
+  ctx.beginPath(); ctx.moveTo(cx,cy-d); ctx.lineTo(cx+d,cy); ctx.lineTo(cx,cy+d); ctx.lineTo(cx-d,cy); ctx.closePath();
+  ctx.fillStyle='#f5c518'; ctx.fill(); ctx.lineWidth=Math.max(1,.05*s); ctx.strokeStyle='#111'; ctx.stroke();
+  ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(cx-.14*s,cy-.16*s,.07*s,0,7); ctx.arc(cx+.14*s,cy-.1*s,.06*s,0,7); ctx.fill();
+  ctx.fillRect(cx-.18*s,cy-.08*s,.08*s,.3*s); ctx.fillRect(cx+.1*s,cy-.03*s,.08*s,.25*s);
+  const c2=b.x-1.1*s,r=.36*s; ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(c2,cy,r,0,7); ctx.fill();
+  ctx.lineWidth=Math.max(1,.08*s); ctx.strokeStyle='#d32f2f'; ctx.stroke();
+  ctx.strokeStyle='#8c9399'; ctx.lineWidth=Math.max(1,.06*s); ctx.beginPath(); ctx.moveTo(c2,cy+r); ctx.lineTo(c2,b.y); ctx.stroke();
+  if(s>14){ctx.fillStyle='#111';ctx.font='bold '+Math.round(.36*s)+'px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('30',c2,cy+.02*s);}
+ } else if(o.kind==='colegio'){ const w=2.6*s,h=.75*s; rr(b.x-w/2,top-h,w,h,.08*s,'#1d4f9a');
+  if(s>10){ctx.fillStyle='#fff';ctx.font='bold '+Math.round(.32*s)+'px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('COLEGIO',b.x,top-h/2);} } }
+
+function drawLight(o){ const b=P(o.X,o.z); if(b.y<HOR)return; const s=b.s,top=b.y-5.6*s;
+ ctx.strokeStyle='#22292d'; ctx.lineWidth=Math.max(1,.14*s); ctx.beginPath(); ctx.moveTo(b.x,b.y); ctx.lineTo(b.x,top); ctx.lineTo(b.x-2.2*s,top); ctx.stroke();
+ const bx=b.x-2.2*s-.25*s,by=top-.1*s; rr(bx,by,.5*s,1.35*s,.08*s,'#15191c');
+ const cols={red:[255,50,40],amber:[255,170,20],green:[40,220,120]},ord=['red','amber','green'];
+ ord.forEach((k,i)=>{const cy=by+.24*s+i*.43*s,on=o.state===k; ctx.fillStyle=on?rgb(cols[k]):'#2b2f33';
+  ctx.beginPath(); ctx.arc(bx+.25*s,cy,.15*s,0,7); ctx.fill(); if(on)glow(bx+.25*s,cy,1.2*s,cols[k],.55);}); }
+
+function drawCarRear(X,z,col,brake,t){ const b=P(X,z); if(b.y<HOR||z<.6)return; const s=b.s,w=1.8*s,h=1.38*s,x=b.x-w/2,y=b.y-h;
+ ctx.fillStyle='rgba(0,0,0,.4)'; ctx.fillRect(x-.06*s,b.y-.07*s,w+.12*s,.12*s);
+ rr(x,y+.36*h,w,h*.64,.12*s,rgb(col)); rr(x+.13*w,y,w*.74,h*.44,.16*s,rgb(mixC(col,[0,0,0],.3)));
+ rr(x+.18*w,y+.06*h,w*.64,h*.3,.1*s,'#0d1418');
+ ctx.fillStyle='#111'; ctx.fillRect(x+.05*w,b.y-.2*s,w*.9,.12*s);
+ const on=brake&&((t*7|0)%2===0||!brake.blink); const lc=on?[255,40,30]:[120,20,18];
+ rr(x+.04*w,y+.47*h,w*.2,h*.13,.04*s,rgb(lc)); rr(x+.76*w,y+.47*h,w*.2,h*.13,.04*s,rgb(lc));
+ if(on){glow(x+.14*w,y+.53*h,1.4*s,[255,40,30],.7);glow(x+.86*w,y+.53*h,1.4*s,[255,40,30],.7);}
+ ctx.fillStyle='#e9e3c6'; ctx.fillRect(b.x-.26*s,y+.66*h,.52*s,.17*s); }
+
+function drawCarFront(X,z,col,lights){ const b=P(X,z); if(b.y<HOR||z<.6)return; const s=b.s,w=1.8*s,h=1.38*s,x=b.x-w/2,y=b.y-h;
+ if(lights){ const n=Math.max(.35,night()); glow(x+.16*w,y+.62*h,4.5*s,[255,240,200],.5*n); glow(x+.84*w,y+.62*h,4.5*s,[255,240,200],.5*n); }
+ ctx.fillStyle='rgba(0,0,0,.4)'; ctx.fillRect(x-.06*s,b.y-.07*s,w+.12*s,.12*s);
+ rr(x,y+.36*h,w,h*.64,.12*s,rgb(col)); rr(x+.12*w,y,w*.76,h*.44,.16*s,rgb(mixC(col,[0,0,0],.25)));
+ rr(x+.16*w,y+.05*h,w*.68,h*.32,.1*s,'#1b2a33');
+ rr(x+.05*w,y+.55*h,w*.22,h*.14,.05*s,lights?'#fff6d8':'#9aa'); rr(x+.73*w,y+.55*h,w*.22,h*.14,.05*s,lights?'#fff6d8':'#9aa');
+ ctx.fillStyle='#0f1416'; ctx.fillRect(x+.32*w,y+.58*h,w*.36,h*.12); ctx.fillStyle='#111'; ctx.fillRect(x+.04*w,b.y-.22*s,w*.92,.14*s); }
+
+function drawBusRear(o){ const b=P(o.X,o.z); if(b.y<HOR)return; const s=b.s,w=2.6*s,h=3.1*s,x=b.x-w/2,y=b.y-h;
+ ctx.fillStyle='rgba(0,0,0,.45)'; ctx.fillRect(x-.1*s,b.y-.1*s,w+.2*s,.16*s);
+ rr(x,y,w,h,.25*s,'#d9a21c'); ctx.fillStyle='#b5850f'; ctx.fillRect(x,y+h*.72,w,h*.06);
+ rr(x+.1*w,y+.08*h,w*.8,h*.32,.1*s,'#1a2730'); ctx.fillStyle='#0f1416'; ctx.fillRect(x+.04*w,b.y-.32*s,w*.92,.18*s);
+ const on=(performance.now()/350|0)%2===0;
+ rr(x+.06*w,y+.6*h,w*.14,h*.08,.04*s,on?'#ff9a1f':'#7a4a10'); rr(x+.8*w,y+.6*h,w*.14,h*.08,.04*s,on?'#ff9a1f':'#7a4a10');
+ if(on){glow(x+.13*w,y+.64*h,1.3*s,[255,154,31],.5);glow(x+.87*w,y+.64*h,1.3*s,[255,154,31],.5);}
+ if(s>12){ctx.fillStyle='#14261e';ctx.font='bold '+Math.round(.32*s)+'px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('RUTA 12',b.x,y+.5*h);} }
+
+function drawRider(){ const k=CH/540,x0=CW*.34+W.sway*.7; ctx.save(); ctx.translate(x0,CH+8); ctx.scale(k,k);
+ ctx.fillStyle='#1b2530'; ctx.beginPath(); ctx.moveTo(-135,0); ctx.bezierCurveTo(-140,-90,-118,-150,-92,-168);
+ ctx.lineTo(92,-168); ctx.bezierCurveTo(118,-150,140,-90,135,0); ctx.closePath(); ctx.fill();
+ ctx.fillStyle='rgba(200,227,74,.85)'; ctx.fillRect(-118,-104,236,15); ctx.fillStyle='rgba(255,255,255,.06)'; ctx.fillRect(-20,-168,40,168);
+ ctx.fillStyle='#b9845d'; ctx.fillRect(-24,-196,48,34);
+ if(G.juanHelmet){ const g=ctx.createRadialGradient(-20,-262,8,0,-238,70); g.addColorStop(0,'#ffffff'); g.addColorStop(1,'#aeb6bd');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.ellipse(0,-238,62,66,0,0,7); ctx.fill(); ctx.fillStyle='#f5c518'; ctx.fillRect(-9,-302,18,120);
+  ctx.fillStyle='#2b3238'; ctx.beginPath(); ctx.ellipse(0,-182,56,14,0,0,7); ctx.fill(); }
+ else { ctx.fillStyle='#b9845d'; ctx.beginPath(); ctx.ellipse(0,-236,48,56,0,0,7); ctx.fill();
+  ctx.fillStyle='#1d1612'; ctx.beginPath(); ctx.ellipse(0,-254,52,44,0,Math.PI,0); ctx.fill(); ctx.beginPath(); ctx.ellipse(0,-262,50,30,0,0,7); ctx.fill();
+  ctx.fillStyle='#a87452'; ctx.beginPath(); ctx.ellipse(-48,-232,9,15,0,0,7); ctx.ellipse(48,-232,9,15,0,0,7); ctx.fill(); }
+ ctx.restore();
+ [[.05,1],[.95,-1]].forEach(m=>{const mx=CW*m[0],my=CH*.8; ctx.strokeStyle='#14181b'; ctx.lineWidth=Math.max(2,CH*.012);
+  ctx.beginPath(); ctx.moveTo(mx+m[1]*CW*.02,CH); ctx.lineTo(mx,my+CH*.05); ctx.stroke();
+  rr(mx-CW*.035,my-CH*.04,CW*.07,CH*.08,CH*.03,'#14181b'); rr(mx-CW*.03,my-CH*.032,CW*.06,CH*.064,CH*.025,'#46525a');});
+}
+function drawVisor(){ ctx.save(); ctx.beginPath(); ctx.rect(0,0,CW,CH);
+ const x=CW*.03,y=CH*.05,w=CW*.94,h=CH*1.2,r=CH*.2;
+ ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r);
+ ctx.fillStyle='rgba(8,10,12,.94)'; ctx.fill('evenodd');
+ const g=ctx.createLinearGradient(0,0,0,CH*.35); g.addColorStop(0,'rgba(30,45,60,.35)'); g.addColorStop(1,'rgba(30,45,60,0)');
+ ctx.fillStyle=g; ctx.fillRect(0,0,CW,CH*.35); ctx.restore(); }
+function drawWind(t){ if(W.speed<25)return; const a=clamp((W.speed-25)/50)*.25; ctx.strokeStyle='rgba(255,255,255,'+a+')'; ctx.lineWidth=1.2; ctx.beginPath();
+ for(let i=0;i<14;i++){const side=i%2?1:-1,ph=(t*1.8+i*.137)%1,yy=CH*(.15+.7*((i*.31)%1)),xx=side>0?CW*(.86+ph*.12):CW*(.14-ph*.12);
+  ctx.moveTo(xx,yy); ctx.lineTo(xx+side*CW*.05,yy+CH*.01);} ctx.stroke(); }
+function drawBusInside(t){ ctx.fillStyle='#14171b';
+ ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(CW*.08,0); ctx.lineTo(CW*.13,CH*.79); ctx.lineTo(0,CH*.79); ctx.fill();
+ ctx.beginPath(); ctx.moveTo(CW,0); ctx.lineTo(CW*.92,0); ctx.lineTo(CW*.87,CH*.79); ctx.lineTo(CW,CH*.79); ctx.fill();
+ ctx.fillRect(0,0,CW,CH*.07); const g=ctx.createLinearGradient(0,CH*.77,0,CH); g.addColorStop(0,'#2a2f35'); g.addColorStop(.08,'#1b1f24'); g.addColorStop(1,'#0d0f12');
+ ctx.fillStyle=g; ctx.fillRect(0,CH*.77,CW,CH*.23);
+ rr(CW*.44,CH*.075,CW*.12,CH*.06,6,'#0d0f12'); rr(CW*.45,CH*.083,CW*.1,CH*.044,5,'#34404a');
+ ctx.fillStyle='#08090b'; [[.3,.86,.06],[.58,.88,.065],[.74,.85,.055]].forEach(h=>{ctx.beginPath();ctx.arc(CW*h[0],CH*h[1],CH*h[2],0,7);ctx.fill();
+  ctx.fillRect(CW*h[0]-CH*h[2]*1.4,CH*h[1]+CH*h[2]*.7,CH*h[2]*2.8,CH*.2);});
+ if(W.rain>.1){ const a=Math.sin(t*3.2)*.8; [.32,.66].forEach(px=>{const bx=CW*px,by=CH*.78,L=CH*.62;
+  ctx.strokeStyle='#0b0c0e'; ctx.lineWidth=Math.max(2,CH*.008); ctx.beginPath(); ctx.moveTo(bx,by); ctx.lineTo(bx+Math.sin(a)*L,by-Math.cos(a)*L); ctx.stroke();});} }
+
+/* ---- render ---- */
+function render(t){
+ ctx.save(); ctx.clearRect(0,0,CW,CH);
+ if(W.shake>.01) ctx.translate((Math.random()-.5)*W.shake*CW*.03,(Math.random()-.5)*W.shake*CH*.03);
+ const n=night(), rainDark=W.rain*.35;
+ HOR=CH*.42+W.bob; FOC=(CH-CH*.42)*3/CAMH;
+ let g=ctx.createLinearGradient(0,0,0,HOR);
+ g.addColorStop(0,rgb(mixC(mixC([46,66,104],[6,10,22],W.tod),[30,34,40],rainDark)));
+ g.addColorStop(1,rgb(mixC(mixC([240,152,92],[30,44,70],W.tod),[60,66,72],rainDark)));
+ ctx.fillStyle=g; ctx.fillRect(-20,-20,CW+40,HOR+22);
+ if(n>.3&&W.rain<.3){ ctx.fillStyle='#fff'; STARS.forEach(s=>{ctx.globalAlpha=(n-.3)*s[2]*(1-W.rain*3);ctx.fillRect(s[0]*CW,s[1]*HOR,1.4,1.4);}); ctx.globalAlpha=1; }
+ const cityC=rgb(mixC([58,52,66],[10,14,22],W.tod)),par=(W.dist*.0006)%1;
+ CITY.forEach(b=>{ const x=((b.x-par*.08+1.1)%1.1-.05)*CW,w=b.w*CW,h=b.h*CH; ctx.fillStyle=cityC; ctx.fillRect(x,HOR-h,w,h+1);
+  if(n>.05){ ctx.fillStyle='rgba(255,214,150,'+(.85*n)+')'; b.wins.forEach(wi=>{ if(wi[2]<n) ctx.fillRect(x+wi[0]*w-1,HOR-h+wi[1]*h-1,2,2);}); } });
+ g=ctx.createLinearGradient(0,HOR,0,CH); g.addColorStop(0,rgb(mixC([52,56,50],[14,16,18],W.tod))); g.addColorStop(1,rgb(mixC([34,36,32],[8,9,10],W.tod)));
+ ctx.fillStyle=g; ctx.fillRect(-20,HOR,CW+40,CH-HOR+20);
+ const sw=rgb(mixC([104,104,98],[40,42,44],W.tod));
+ quad(P(1.95,ZN),P(5.6,ZN),P(5.6,ZF),P(1.95,ZF),sw); quad(P(-9,ZN),P(-5.3,ZN),P(-5.3,ZF),P(-9,ZF),sw);
+ const road=mixC(mixC([62,64,66],[24,26,28],W.tod),[14,16,18],W.wet*.55);
+ quad(P(-5.3,ZN),P(1.95,ZN),P(1.95,ZF),P(-5.3,ZF),rgb(road));
+ if(W.wet>.05){ g=ctx.createLinearGradient(0,HOR,0,CH); g.addColorStop(0,'rgba(140,160,190,'+(.18*W.wet)+')'); g.addColorStop(1,'rgba(140,160,190,0)');
+  ctx.fillStyle=g; const a=P(-5.3,ZN),b2=P(1.95,ZN),c=P(1.95,ZF),d=P(-5.3,ZF); quad(a,b2,c,d,g); }
+ const lineC=rgb(mixC([230,230,220],[150,150,140],W.tod*.6));
+ quad(P(1.7,ZN),P(1.82,ZN),P(1.82,ZF),P(1.7,ZF),lineC); quad(P(-5.12,ZN),P(-5.0,ZN),P(-5.0,ZF),P(-5.12,ZF),lineC);
+ const SP=9,DL=3.2,off=W.dist%SP;
+ for(let z=SP-off;z<190;z+=SP){ if(z+DL<ZN)continue; const z0=Math.max(z,ZN); quad(P(-1.84,z0),P(-1.66,z0),P(-1.66,z+DL),P(-1.84,z+DL),'#e9c43a'); }
+ if(W.zebra){ for(let x=-5;x<1.6;x+=.9) quad(P(x,3.2),P(x+.5,3.2),P(x+.5,7.2),P(x,7.2),'rgba(235,235,230,.85)'); }
+ if(W.view==='moto'&&n>.15){ g=ctx.createRadialGradient(CW/2+W.sway,CH*.82,0,CW/2+W.sway,CH*.7,CH*.55);
+  g.addColorStop(0,'rgba(255,240,200,'+(.22*n)+')'); g.addColorStop(1,'rgba(255,240,200,0)'); ctx.fillStyle=g; ctx.fillRect(0,HOR,CW,CH-HOR); }
+ const items=[];
+ for(let z=28-(W.dist%28);z<230;z+=28){ items.push([z,()=>drawPole(2.75,z)]); const z2=z+14; items.push([z2,()=>drawPole(-6.3,z2)]); }
+ if(W.sign) items.push([W.sign.z,()=>drawSign(W.sign)]);
+ if(W.light) items.push([W.light.z,()=>drawLight(W.light)]);
+ if(W.bus) items.push([W.bus.z,()=>drawBusRear(W.bus)]);
+ W.amb.forEach(a=>items.push([a.z,()=>drawCarFront(a.X,a.z,a.c,true)]));
+ if(W.cross){ const c=W.cross; items.push([c.z,()=>{ const b=P(c.x,c.z); if(b.y<HOR)return; const s=b.s,w=4.3*s,h=1.35*s;
+  ctx.fillStyle='rgba(0,0,0,.4)'; ctx.fillRect(b.x-w/2,b.y-.07*s,w,.12*s); rr(b.x-w/2,b.y-h*.64,w,h*.64,.15*s,'#2d6fb3'); rr(b.x-w*.3,b.y-h,w*.55,h*.42,.15*s,'#1f4f82');
+  ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(b.x-w*.3,b.y-.05*s,.33*s,0,7); ctx.arc(b.x+w*.3,b.y-.05*s,.33*s,0,7); ctx.fill();
+  const hx=c.dir>0?b.x+w/2:b.x-w/2; glow(hx,b.y-h*.4,3*s,[255,240,200],.6);}]); }
+ if(W.hazard){ const h=W.hazard; items.push([h.z,()=>{ if(h.kind==='rear') drawCarRear(h.X,h.z,[150,26,30],{blink:true},t); else drawCarFront(h.X,h.z,[60,66,74],true); }]); }
+ items.sort((a,b)=>b[0]-a[0]).forEach(i=>i[1]());
+ if(W.rain>.02){ ctx.strokeStyle='rgba(200,215,235,'+(.32*W.rain+.08)+')'; ctx.lineWidth=1; ctx.beginPath(); const nn=Math.floor(DROPS.length*W.rain);
+  for(let i=0;i<nn;i++){const d=DROPS[i],x=d.x*CW,y=d.y*CH; ctx.moveTo(x,y); ctx.lineTo(x-CW*.006*d.l,y+CH*.045*d.l);} ctx.stroke(); }
+ if(W.view==='moto'){ drawRider(); if(G.youHelmet) drawVisor(); else drawWind(t); }
+ else if(W.view==='bus') drawBusInside(t);
+ g=ctx.createRadialGradient(CW/2,CH*.55,CH*.35,CW/2,CH*.55,CW*.75); g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,.55)');
+ ctx.fillStyle=g; ctx.fillRect(0,0,CW,CH);
+ if(W.dim>.01){ ctx.fillStyle='rgba(0,0,0,'+W.dim+')'; ctx.fillRect(0,0,CW,CH); }
+ if(W.flash>.01){ ctx.fillStyle=rgb(W.flashC,W.flash*.6); ctx.fillRect(0,0,CW,CH); }
+ if(W.black>.01){ ctx.fillStyle='rgba(0,0,0,'+W.black+')'; ctx.fillRect(0,0,CW,CH); }
+ ctx.restore(); }
+
+/* ================= ACTUALIZACIÓN ================= */
+function approach(v,tgt,up,down,dt){ return v<tgt?Math.min(tgt,v+up*dt):Math.max(tgt,v-down*dt); }
+let ambNext=2;
+function update(dt,t){
+ W.tod=approach(W.tod,W.todT,.06,.06,dt); W.rain=approach(W.rain,W.rainT,.35,.25,dt);
+ W.wet=approach(W.wet,G.wet===2?1:(G.wet===1?.6:0),.3,.2,dt);
+ W.camX=approach(W.camX,W.camXT,W.camRate,W.camRate,dt);
+ W.black=approach(W.black,W.blackT,1.2,1.2,dt);
+ if(!(T.on&&T.phase==='run')) W.speed=approach(W.speed,W.target,9,16,dt);
+ const v=W.speed/3.6;
+ if(T.on) testStep(dt);
+ W.dist+=v*dt;
+ const mv=v*dt;
+ if(W.sign){W.sign.z-=mv; if(W.sign.z<1)W.sign=null;}
+ if(W.light){W.light.z-=mv; if(W.light.z<1)W.light=null;}
+ if(W.bus){W.bus.z+=(W.bus.v||0)*dt-mv; if(W.bus.z<1||W.bus.z>260)W.bus=null;}
+ if(W.cross){W.cross.x+=W.cross.dir*W.cross.v*dt; W.cross.z-=mv; if(Math.abs(W.cross.x)>14)W.cross=null;}
+ if(W.hazard&&!T.on){ const h=W.hazard; h.z-=mv+(h.v||0)*dt; if(h.z<-3)W.hazard=null; }
+ W.amb.forEach(a=>a.z-=mv+a.v*dt); W.amb=W.amb.filter(a=>a.z>.8);
+ ambNext-=dt; if(W.ambOn&&ambNext<=0&&W.amb.length<2){ W.amb.push({z:170,X:-3.5,v:9+Math.random()*6,c:[[90,96,110],[160,160,165],[40,70,120],[120,30,35]][Math.random()*4|0]}); ambNext=2.5+Math.random()*4; }
+ const rs=1+W.speed/50; DROPS.forEach(d=>{d.y+=d.v*dt*1.6*rs; d.x-=.02*dt*rs; if(d.y>1.1){d.y=-.1;d.x=Math.random()*1.2-.1;}});
+ W.shake=Math.max(0,W.shake-dt*1.6); W.flash=Math.max(0,W.flash-dt*1.1);
+ W.sway=W.view==='moto'?Math.sin(t*1.3)*CW*.006*clamp(W.speed/50,0,1.6):0;
+ if(W.mode==='walk'&&W.speed>.5){ W.bob=Math.sin(t*(W.speed>7?13:8))*CH*(W.speed>7?.012:.007); } else W.bob=approach(W.bob,0,CH*.05,CH*.05,dt);
+ AU.engine(W.speed,W.view==='bus'?'bus':(W.view==='moto'?'moto':'walk'));
+ hudSpeed(t); }
+
+let last=0;
+function frame(now){ const t=now/1000,dt=Math.min(.05,last?t-last:0); last=t; update(dt,t); render(t); requestAnimationFrame(frame); }
+
+/* ================= HUD / UI ================= */
+const panel=$('#panel');
+function hud(){ $('#hStep').innerHTML='Paso<b>'+(G.step?G.step+' / 6':'—')+'</b>'; }
+function hudSpeed(t){ const el=$('#hSpd'); const walk=W.mode!=='drive';
+ const txt=walk?(W.speed>7?'corriendo':(W.speed>.5?'a pie':'quieto')):Math.round(W.speed)+' km/h';
+ const lab=walk?'Tú':'Velocidad'; const html=lab+'<b>'+txt+'</b>'; if(el._h!==html){el.innerHTML=html;el._h=html;}
+ el.style.color=(!walk&&W.speed>62)?'#ffb3ab':''; }
+function setMargin(m,silent){ G.margin=m; $('#hM').textContent=m+'%'; const b=$('#hBar'); b.style.width=m+'%';
+ b.style.background=m>66?'#3ecf8e':(m>33?'#f5c518':'#ff5c4d'); }
+function addMargin(d){ if(!d)return; setMargin(clamp(G.margin+d,0,100)); const f=document.createElement('span'); f.className='float';
+ f.textContent=(d>0?'+':'')+d+'%'; f.style.color=d>0?'#3ecf8e':'#ff5c4d'; $('.mpill').appendChild(f); setTimeout(()=>f.remove(),1600);
+ if(d<0)AU.tone(180,.25,'triangle',.12); else AU.tone(660,.15,'sine',.1); }
+function chips(){ const c=[]; if(G.route==='moto') c.push(G.youHelmet?['g','🪖 Con casco']:['r','⚠️ Sin casco']);
+ if(G.route==='moto'&&!G.juanHelmet) c.push(['r','Juan sin casco']);
+ if(G.audif) c.push(['r','🎧 Volumen alto']); if(G.phone) c.push(['r','📱 Pendiente del celular']);
+ if(G.wet===2) c.push(['r','🌧 Piso mojado']); else if(G.wet===1) c.push(['','🌦 Piso húmedo']);
+ $('#chips').innerHTML=c.map(x=>'<span class="chip '+x[0]+'">'+x[1]+'</span>').join(''); }
+let bTimer=null;
+function banner(txt,col,ms){ const b=$('#banner'),s=$('#bannerT'); s.textContent=txt; s.style.color=col||'#fff'; b.classList.add('on');
+ clearTimeout(bTimer); if(ms) bTimer=setTimeout(()=>b.classList.remove('on'),ms); }
+function bannerOff(){ $('#banner').classList.remove('on'); }
+let tTimer=null;
+function toast(m,ms){ const e=$('#toast'); e.textContent=m; e.classList.add('on'); clearTimeout(tTimer); tTimer=setTimeout(()=>e.classList.remove('on'),ms||2600); }
+function notif(on,msg){ const n=$('#notif'); if(msg)n.querySelector('.msg').textContent=msg; n.classList.toggle('on',!!on); if(!on)$('#typing').style.display='none'; }
+function clock(){ const m=40+Math.round(W.todT*32); const h=6+Math.floor(m/60); return h+':'+String(m%60).padStart(2,'0')+' p.m.'; }
+function scrollPanel(el){ const x=el||panel; try{ const r=x.getBoundingClientRect(); if(r.bottom>window.innerHeight-10||r.top<0) x.scrollIntoView({behavior:'smooth',block:r.height>window.innerHeight?'start':'end'}); }catch(e){} }
+function scrollStage(){ try{ const st=$('#stage'),r=st.getBoundingClientRect(),bk=$('#bk'),rb=bk?bk.getBoundingClientRect():r;
+  if(r.top<0||rb.bottom>window.innerHeight) window.scrollTo({top:window.scrollY+r.top-6,behavior:'smooth'}); }catch(e){} }
+function show(html){ panel.innerHTML='<div class="card">'+html+'</div>'; }
+let KEY=null;
+document.addEventListener('keydown',e=>{ if(e.repeat)return; if($('#modal').classList.contains('on')){ if(e.key==='Enter'||e.key==='Escape'||e.key===' '){e.preventDefault();closeModal();} return; }
+ if(KEY&&!(e.target&&e.target.tagName==='INPUT'))KEY(e); });
+function tone(d){return d<=-20?'bad':(d<0?'mid':'good');}
+function label(d){ return (d<=-20?'Decisión de alto riesgo':(d<0?'Decisión riesgosa':(d>0?'Buena decisión':'Decisión neutra')))+(d?' · '+(d>0?'+':'')+d+'% de margen':''); }
+
+function decision(o){
+ G.step=o.step; hud(); const L='ABCD';
+ show('<div class="step">Paso '+o.step+' de 6 · '+clock()+'</div><h2>'+o.title+'</h2><p>'+o.text+'</p><div class="opts">'+
+  o.opts.map((x,i)=>'<button class="opt" data-i="'+i+'"><span class="k">'+L[i]+'</span><span>'+esc(x.t)+'</span></button>').join('')+
+  '</div><div id="fbx"></div><div class="hint" id="hk">Toca una opción o usa las teclas <kbd>1</kbd> a <kbd>'+o.opts.length+'</kbd></div>');
+ let done=false; const btns=[].slice.call(panel.querySelectorAll('.opt'));
+ function pick(i){ if(done)return; done=true; KEY=null; AU.resume(); const x=o.opts[i];
+  btns.forEach((b,j)=>b.classList.add(j===i?'sel':'off')); btns[i].classList.add(tone(x.d)); const hk=$('#hk'); if(hk)hk.remove();
+  const fin=()=>{ addMargin(x.d); G.log.push({t:x.log,d:x.d}); chips();
+   $('#fbx').innerHTML='<div class="fb '+tone(x.d)+'"><b>'+label(x.d)+'</b>'+esc(x.f)+'</div><button class="btn" id="nx">Seguir →</button>';
+   const nx=$('#nx'); nx.onclick=()=>{ KEY=null; nx.disabled=true; if(o.then)o.then(x); };
+   KEY=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); nx.click(); } }; scrollPanel($('#fbx')); };
+  if(x.fx) x.fx(fin); else fin(); }
+ btns.forEach((b,i)=>b.onclick=()=>pick(i));
+ KEY=e=>{ const n=parseInt(e.key,10); if(n>=1&&n<=o.opts.length){ e.preventDefault(); pick(n-1); } };
+ if(o.onShow)o.onShow(); }
+
+function typeMsg(txt,ms,cb){ const ty=$('#typing'); ty.style.display='block'; ty.textContent=''; let i=0;
+ const step=Math.max(40,ms/txt.length); const iv=setInterval(()=>{ i++; ty.textContent=txt.slice(0,i); AU.tone(1500+Math.random()*400,.03,'square',.02);
+  if(i>=txt.length){ clearInterval(iv); later(cb,350); } },step); TM.push(iv); }
+
+/* ================= ESCENAS ================= */
+function scene(kind){
+ if(kind==='school'){ Object.assign(W,{view:'none',mode:'stand',speed:0,target:0,camX:1.2,camXT:1.2,todT:.05,tod:.05,rainT:0,rain:0,
+  sign:{kind:'colegio',X:3.6,z:11},light:null,bus:null,hazard:null,zebra:false,cross:null,ambOn:true,black:0,blackT:0,dim:0}); }
+}
+
+function intro(){
+ clearTimers(); resetGame(false); scene('school'); bannerOff(); notif(false);
+ show('<div class="step">Campaña Ruta Segura</div><h1>¿LLEGAS?</h1>'+
+ '<p>Son las 6:40 de la tarde y acabas de salir del colegio. Tienes que llegar a tu casa.</p>'+
+ '<ul class="how"><li><b>Seis decisiones.</b> Ninguna tiene nota: todas tienen consecuencias.</li>'+
+ '<li><b>Margen de seguridad.</b> Empiezas con 100%. Es lo que te queda para reaccionar cuando algo salga mal.</li>'+
+ '<li><b>Una prueba real.</b> En un momento vas a tener que reaccionar de verdad, con tu propio tiempo de reacción.</li></ul>'+
+ '<label class="lbl" for="nm">¿Cómo te llamas?</label><input id="nm" maxlength="40" placeholder="Nombre y apellido" autocomplete="name">'+
+ '<button class="btn" id="go">Salir del colegio →</button><div class="hint">Mejor con el sonido activado 🔊</div>');
+ const go=()=>{ const v=$('#nm').value.trim(); if(!v){ $('#nm').focus(); toast('Escribe tu nombre para empezar'); return; }
+  G.name=v; AU.init(); AU.resume(); AU.vol(muted); banner('6:40 p.m.',  '#fff',1600); later(d1,350); };
+ $('#go').onclick=go; $('#nm').onkeydown=e=>{ if(e.key==='Enter')go(); };
+}
+function restart(){ clearTimers(); const nm=G.name; resetGame(true); G.name=nm; scene('school'); bannerOff(); notif(false); AU.muffle(false); AU.rain(0);
+ $('#modal').classList.remove('on'); banner('6:40 p.m.','#fff',1400); later(d1,300); window.scrollTo({top:0,behavior:'smooth'}); }
+
+function d1(){ W.todT=.1;
+ decision({step:1,title:'Juan te ofrece llevarte en moto.',
+ text:'Es tu amigo del salón. Tiene la moto de su hermano y <b>un solo casco</b>. Dice que son diez minutos. El bus se demora cuarenta.',
+ opts:[
+  {t:'Te vas en bus. Cuarenta minutos, pero llegas.',d:0,log:'Eligió el bus en vez de la moto con un solo casco',route:'bus',
+   f:'Decidiste con la cabeza fría, antes de estar en la vía. Casi todas las buenas decisiones viales se toman así: antes, no durante.'},
+  {t:'Le dices que vas solo si consiguen otro casco.',d:5,log:'Exigió casco para los dos antes de subirse',route:'moto',you:true,juan:true,
+   f:'El celador les presta uno. Pedir el casco no es exagerar: es la condición mínima para subirse. Ahora van los dos protegidos.'},
+  {t:'Aceptas. Tú te pones el casco y Juan maneja sin él.',d:-15,log:'Se subió a una moto cuyo conductor iba sin casco',route:'moto',you:true,juan:false,
+   f:'Que tú lo lleves no protege a Juan, y si él pierde el control, lo pierden los dos. El casco es obligatorio para conductor y parrillero.'},
+  {t:'Aceptas. Juan se pone el casco y tú vas sin él.',d:-30,log:'Viajó de parrillero sin casco',route:'moto',you:false,juan:true,
+   f:'El tiempo del trayecto no cambia el riesgo. La mayoría de los siniestros en moto ocurren en recorridos cortos y conocidos, justamente donde más confianza hay.'}],
+ then:x=>{ G.route=x.route; if(x.route==='moto'){ G.youHelmet=x.you; G.juanHelmet=x.juan; chips(); startMoto(); } else startBus(); } }); }
+
+/* ---------- RUTA MOTO ---------- */
+function startMoto(){ Object.assign(W,{view:'moto',mode:'drive',camX:0,camXT:0,sign:null}); W.target=40; G.speedSet=40;
+ show('<div class="step">En camino</div><h2>Arrancan.</h2><p class="dim">Juan prende la moto y salen por la portería del colegio.</p>');
+ banner('¡Vámonos!','#f5c518',1300); later(d2moto,2600); }
+function d2moto(){ W.todT=.22; W.sign={kind:'escolar',X:2.9,z:75}; W.target=52;
+ decision({step:2,title:'Juan acelera frente al colegio.',
+ text:'Todavía están en la zona escolar y hay estudiantes saliendo. El velocímetro sube de 50. <b>El límite aquí es 30.</b>',
+ opts:[
+  {t:'Le dices que baje a 30.',d:5,log:'Pidió reducir a 30 en la zona escolar',sp:30,
+   f:'El copiloto también responde. Advertir una conducta de riesgo no es molestar: es la forma más barata de evitar un siniestro.'},
+  {t:'No dices nada. Te da pena.',d:-15,log:'Calló ante el exceso de velocidad',sp:60,
+   f:'A 60 km/h la moto recorre casi 17 metros por segundo. En una zona donde cruzan estudiantes, esos metros son la diferencia entre frenar y no frenar.'},
+  {t:'Le dices que acelere, que tienes afán.',d:-25,log:'Pidió ir más rápido en zona escolar',sp:70,
+   f:'Nadie sale a buscar un accidente. Se sale a llegar rápido, y eso es justamente lo que acorta el tiempo para reaccionar.'}],
+ then:x=>{ G.speedSet=x.sp; W.target=x.sp; if(x.sp===30) later(()=>{G.speedSet=45; W.target=45;},3500); later(d3moto,900); } }); }
+function d3moto(){ W.todT=.42; AU.ping(); notif(true,'¿Ya vienes? 🙂');
+ decision({step:3,title:'Te vibra el celular.',
+ text:'Es tu mamá. Vas de parrillero, con una mano agarrada de la parrilla, a '+Math.round(G.speedSet)+' km/h.',
+ opts:[
+  {t:'Lo sacas y le contestas rápido.',d:-20,log:'Usó el celular yendo de parrillero',
+   fx:fin=>{ G.phone=true; chips(); W.dim=.55; typeMsg('ya voy, voy en la moto con juan',2300,()=>{ W.dim=0; notif(false); fin(); }); },
+   f:'Mientras escribías no viste la vía ni un segundo, y soltaste el único agarre que tenías. Responder un mensaje toma unos tres segundos: a esa velocidad son 50 metros. Y el celular va a volver a sonar.'},
+  {t:'Esperas a llegar.',d:5,log:'Esperó para responder el mensaje',fx:fin=>{ notif(false); fin(); },
+   f:'Tres segundos de espera contra 50 metros sin mirar. Es el cálculo más fácil de toda la vía. Y como copiloto, tus ojos en la vía también cuentan.'},
+  {t:'Le pides a Juan que pare un momento y respondes.',d:5,log:'Pidió detenerse para responder',
+   fx:fin=>{ W.target=0; later(()=>{ notif(false); W.target=G.speedSet; },2600); fin(); },
+   f:'Detenerse en un lugar seguro siempre es una opción, y casi nunca cuesta lo que creemos.'}],
+ then:()=>later(d4moto,700) }); }
+function d4moto(){ W.todT=.6; W.rainT=1; G.wet=2; AU.rain(1); chips(); banner('Empieza a llover','#bcd3ff',1600);
+ decision({step:4,title:'Empieza a llover.',
+ text:'El pavimento mojado alarga la distancia de frenado casi al doble y los faros encandilan. Juan grita algo que no alcanzas a oír.',
+ opts:[
+  {t:'Juan acelera para no mojarse. No dices nada.',d:-25,log:'Aceleraron bajo la lluvia para no mojarse',
+   fx:fin=>{ G.speedSet+=15; W.target=G.speedSet; fin(); },
+   f:'Con el piso mojado la moto necesita casi el doble de distancia para detenerse. Ir más rápido bajo la lluvia es gastar el margen justo cuando más falta hace.'},
+  {t:'Le pides que baje la velocidad.',d:5,log:'Redujeron la velocidad bajo la lluvia',
+   fx:fin=>{ G.speedSet=Math.max(30,G.speedSet-12); W.target=G.speedSet; fin(); },
+   f:'Bajar la velocidad bajo la lluvia es exactamente lo correcto: le devuelves a Juan el tiempo que el agua le quitó.'},
+  {t:'Le pides que paren bajo un techo hasta que amaine.',d:10,log:'Se refugiaron hasta que bajó la lluvia',
+   fx:fin=>{ W.target=0; later(()=>{ W.rainT=.3; AU.rain(.3); G.wet=1; chips(); },2000); later(()=>{ W.target=G.speedSet; },4200); fin(); },
+   f:'Cinco minutos bajo un techo. El piso sigue húmedo, pero ya no está encharcado. Esa es toda la diferencia entre llegar mojado y no llegar.'}],
+ then:()=>later(testMoto,600) }); }
+
+/* ---------- PRUEBA MOTO ---------- */
+function testMoto(){ G.step=5; hud(); W.todT=.78; W.target=G.speedSet;
+ show('<div class="step">Paso 5 de 6 · Prueba de copiloto</div><h2>Tramo final. Atento a la vía.</h2>'+
+ '<p>Juan va cansado. Si ves un peligro adelante, <b>grítale que frene</b>: toca el botón o la barra espaciadora. Si no le avisas, Juan reacciona solo… pero tarde.</p>'+
+ '<button class="brake idle" id="bk">¡FRENA!</button><div class="hint">No toques antes de tiempo: una frenada sin motivo también es un riesgo.</div>');
+ const bk=$('#bk'); const hit=()=>{ bk.classList.add('hit'); setTimeout(()=>bk.classList.remove('hit'),120); tap(); };
+ bk.addEventListener('pointerdown',e=>{ e.preventDefault(); hit(); });
+ KEY=e=>{ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); hit(); } };
+ Object.keys(T).forEach(k=>delete T[k]); Object.assign(T,{on:true,kind:'moto',phase:'wait',t:0,spawn:2.2+Math.random()*2.6,tap:null,brakeAt:null,alone:false,
+  a:G.wet===2?4.5:(G.wet===1?5.6:7.0),auto:1.5,react:0,brk:0,done:false});
+ scrollStage(); }
+function tap(){ AU.resume();
+ if(!T.on||T.done)return;
+ if($('#modal').classList.contains('on'))return;
+ if(T.phase==='wait'){ T.t=0; T.spawn=1.8+Math.random()*2.4;
+  toast(T.kind==='moto'?'Juan frenó de golpe sin motivo. Atento, pero sin falsas alarmas.':'Todavía no viene nada. Si te devuelves sin motivo te quedas más tiempo en la vía.');
+  if(T.kind==='moto'){ W.speed=Math.max(10,W.speed-15); } return; }
+ if(T.tap===null){ T.tap=T.e; AU.tone(300,.15,'square',.08); } }
+function testStep(dt){
+ if(T.done&&T.phase!=='run')return;
+ if(T.kind==='moto'){
+  if(T.phase==='wait'){ T.t+=dt; if(T.t>=T.spawn){ T.phase='run'; T.e=0; T.v=W.speed/3.6; T.v0=T.v;
+    W.hazard={kind:'rear',X:0,z:42}; AU.screech(.5); if(G.phone) openModal(); const bk=$('#bk'); if(bk)bk.classList.remove('idle'); } return; }
+  if(T.phase!=='run')return; T.e+=dt;
+  if(T.brakeAt===null){ if(T.tap!==null) T.brakeAt=T.tap+.25; else if(T.e>=T.auto){ T.brakeAt=T.e; T.alone=true; } }
+  const br=T.brakeAt!==null&&T.e>=T.brakeAt;
+  if(br&&!T.snd){ T.snd=true; T.vb=T.v; AU.screech(1); }
+  if(br) T.v=Math.max(0,T.v-T.a*dt);
+  const ds=T.v*dt; if(br)T.brk+=ds; else T.react+=ds;
+  W.hazard.z-=ds; W.speed=T.v*3.6; W.target=W.speed;
+  if(W.hazard.z<=2.1&&T.v>.15){ endTest(true,T.v*3.6); }
+  else if(T.v<=0){ endTest(false,0); }
+ } else {
+  if(T.phase==='wait'){ T.t+=dt; if(T.t>=T.spawn){ T.phase='run'; T.e=0;
+    W.hazard={kind:'front',X:-.3,z:T.z0,v:12.5}; T.v0=12.5;
+    if(G.audif){ AU.horn(); } else { AU.horn(); banner('¡PIIIII!','#ffd166',700); }
+    if(G.phone) openModal(); const bk=$('#bk'); if(bk)bk.classList.remove('idle'); } return; }
+  if(T.phase!=='run')return; T.e+=dt; const h=W.hazard;
+  if(T.e>=.9) h.v=Math.max(0,h.v-T.a*dt);
+  h.z-=h.v*dt;
+  if(T.tap!==null&&!T.esc){ T.esc=true; W.camXT=3.6; W.camRate=11; }
+  const safe=T.tap!==null&&T.e>=T.tap+.35;
+  if(!T.done){
+   if(safe){ T.safeAt=T.e; endTest(false,0); }
+   else if(h.z<=2.1&&h.v>.15){ endTest(true,h.v*3.6); }
+   else if(h.v<=0){ T.stopped=true; endTest(false,0); } }
+  else if(h.z<-3){ W.hazard=null; T.phase='over'; }
+ } }
+function endTest(impact,vImp){ if(T.done)return; T.done=true; KEY=null; closeModal(true);
+ const bk=$('#bk'); if(bk){ bk.disabled=true; bk.style.opacity=.5; }
+ G.res={kind:T.kind,impact,vImp:Math.round(vImp),tap:T.tap,alone:T.alone,a:T.a,v0:T.v0,vb:T.vb||T.v0,react:T.react,brk:T.brk,
+  z0:T.z0,e:T.e,stopped:!!T.stopped,cross:G.cross,gap:W.hazard?Math.max(0,W.hazard.z-2.1):0};
+ if(impact){ AU.crash(); W.flash=1; W.shake=1.2; W.target=0; W.speed=0; W.blackT=.25; T.phase='over';
+  if(T.kind==='moto') W.hazard.z=2.1; else { W.hazard.v=0; }
+ } else if(T.kind==='moto'){ T.phase='over'; W.target=0; }
+ else { AU.whoosh(); }
+ later(()=>{ T.on=false; testResult(); },impact?1700:1500); }
+
+/* ---------- RUTA BUS ---------- */
+function startBus(){ Object.assign(W,{view:'bus',mode:'drive',camX:-.2,camXT:-.2,sign:null}); W.target=38;
+ show('<div class="step">En el bus</div><h2>Te subiste al bus.</h2><p class="dim">Vas sentado junto a la ventana. El trayecto es largo, pero hoy no tienes que tomar ninguna decisión aquí adentro.</p><button class="btn" id="bj" disabled>Bajarme del bus →</button>');
+ banner('Cuarenta minutos después…','#fff',2200); W.todT=.3;
+ later(()=>{ const b=$('#bj'); if(b){ b.disabled=false; b.onclick=getOff; KEY=e=>{ if(e.key==='Enter'){ e.preventDefault(); getOff(); } }; } },2400); }
+function getOff(){ KEY=null; W.target=0; W.blackT=1;
+ later(()=>{ Object.assign(W,{view:'none',mode:'walk',camX:3.4,camXT:3.4,speed:0,bus:{X:.6,z:12,v:0}}); W.target=5; W.blackT=0;
+  later(()=>{ if(W.bus) W.bus.v=9; },1500); d2bus(); },900); }
+function d2bus(){ W.todT=.38;
+ decision({step:2,title:'Suena tu canción.',
+ text:'Te bajaste del bus y caminas por el andén, junto a una avenida rápida. Quieres subirle el volumen a los audífonos.',
+ opts:[
+  {t:'Le subes. Igual vas por el andén.',d:-15,log:'Caminó junto a la avenida con el volumen alto',
+   fx:fin=>{ G.audif=true; AU.muffle(true); chips(); fin(); },
+   f:'El oído es tu alerta más rápida: escuchas el carro antes de verlo. ¿Notas cómo se apagó el sonido del juego? Así vas a caminar el resto del trayecto.'},
+  {t:'Te dejas un audífono afuera.',d:0,log:'Dejó un oído libre',
+   f:'Una solución razonable: mantienes el entorno aunque vayas con música. No ganas margen, pero tampoco lo pierdes.'},
+  {t:'Los guardas hasta llegar.',d:5,log:'Guardó los audífonos cerca de la vía',
+   f:'Cinco minutos sin música. Es el precio más bajo que se paga por tener la atención completa.'}],
+ then:()=>later(d3bus,500) }); }
+function d3bus(){ W.todT=.5; AU.ping(); notif(true,'¿Ya vienes? 🙂');
+ decision({step:3,title:'Te escribe tu mamá.',
+ text:'Vas caminando hacia la esquina donde tienes que cruzar la avenida.',
+ opts:[
+  {t:'Le contestas mientras caminas.',d:-15,log:'Caminó escribiendo en el celular',
+   fx:fin=>{ G.phone=true; chips(); W.dim=.55; typeMsg('ya casi llego ma',2000,()=>{ W.dim=0; notif(false); fin(); }); },
+   f:'Mientras escribías caminaste varios metros sin mirar. El peatón distraído no calcula distancias ni escucha. Y el celular va a volver a sonar.'},
+  {t:'Esperas a llegar.',d:5,log:'Esperó para responder',fx:fin=>{ notif(false); fin(); },
+   f:'El mensaje puede esperar cinco minutos. Tu atención en la vía no.'},
+  {t:'Te detienes contra la pared y respondes.',d:5,log:'Se detuvo en un lugar seguro para responder',
+   fx:fin=>{ W.target=0; later(()=>{ notif(false); W.target=5; },2300); fin(); },
+   f:'Detenerse lejos del borde del andén para responder es la forma correcta: el celular y la vía nunca al mismo tiempo.'}],
+ then:()=>later(d4bus,600) }); }
+function d4bus(){ W.todT=.62; W.rainT=1; G.wet=2; AU.rain(1); chips(); banner('Empieza a llover','#bcd3ff',1600);
+ decision({step:4,title:'Empieza a llover.',
+ text:'El andén se pone resbaloso. Los carros pasan levantando agua y con los faros encendidos ya casi no se ve.',
+ opts:[
+  {t:'Corres para llegar más rápido.',d:-20,log:'Corrió bajo la lluvia junto a la vía',fx:fin=>{ W.target=10; fin(); },
+   f:'Correr junto a una vía mojada te quita estabilidad y te mete al carril sin darte cuenta. La prisa es la que más decisiones malas produce.'},
+  {t:'Caminas igual, atento.',d:0,log:'Caminó con precaución bajo la lluvia',
+   f:'Mantener el paso y la atención es razonable. No ganaste margen, pero tampoco lo perdiste.'},
+  {t:'Te refugias cinco minutos.',d:10,log:'Se refugió hasta que bajó la lluvia',
+   fx:fin=>{ W.target=0; later(()=>{ W.rainT=.3; AU.rain(.3); G.wet=1; chips(); },2000); later(()=>{ W.target=5; },4000); fin(); },
+   f:'Cinco minutos. Esa es toda la diferencia entre llegar mojado y no llegar.'}],
+ then:()=>later(d5bus,600) }); }
+function d5bus(){ W.todT=.72; W.target=0; W.mode='stand'; W.camXT=2.6; W.bus={X:.6,z:8,v:0};
+ decision({step:5,title:'Tienes que cruzar la avenida.',
+ text:'La cebra está media cuadra más adelante. Justo frente a ti hay un bus detenido que te tapa la vista del carril.',
+ opts:[
+  {t:'Cruzas por detrás del bus. Es más rápido.',d:-25,log:'Cruzó por detrás del bus',cr:'behind',
+   f:'Detrás del bus tú no ves el tráfico y el tráfico no te ve a ti. Es una de las formas más frecuentes de atropellamiento de peatones.'},
+  {t:'Esperas a que el bus arranque y cruzas ahí.',d:-10,log:'Cruzó fuera de la cebra, con visibilidad',cr:'wait',
+   fx:fin=>{ if(W.bus)W.bus.v=10; fin(); },
+   f:'Mejor que cruzar a ciegas, pero sigues fuera de la zona demarcada: ahí ningún conductor espera encontrarse un peatón.'},
+  {t:'Caminas media cuadra hasta la cebra.',d:5,log:'Caminó hasta la cebra para cruzar',cr:'cebra',
+   fx:fin=>{ if(W.bus)W.bus.v=10; W.mode='walk'; W.target=5; later(()=>{ W.target=0; W.mode='stand'; W.zebra=true; },1800); fin(); },
+   f:'En la cebra tienes prelación y, sobre todo, el conductor espera encontrarte ahí. La seguridad vial es, en buena parte, ser previsible.'}],
+ then:x=>{ G.cross=x.cr; later(testBus,500); } }); }
+
+/* ---------- PRUEBA PEATÓN ---------- */
+function testBus(){ G.step=5; hud(); W.todT=.8; W.mode='stand'; W.target=0; W.camXT=.2; W.camRate=1.2;
+ if(G.cross!=='behind') W.bus=null;
+ let z0=G.cross==='cebra'?34:(G.cross==='wait'?22:12); if(G.audif) z0-=5;
+ show('<div class="step">Paso 5 de 6 · Prueba de reacción</div><h2>Vas cruzando la avenida.</h2>'+
+ '<p>Si aparece un carro, <b>devuélvete al andén</b>: toca el botón o la barra espaciadora. Devolverte toma un tercio de segundo.</p>'+
+ '<button class="brake blue idle" id="bk">¡AL ANDÉN!</button><div class="hint">No toques antes de tiempo: si te devuelves sin motivo te quedas más tiempo en la vía.</div>');
+ const bk=$('#bk'); const hit=()=>{ bk.classList.add('hit'); setTimeout(()=>bk.classList.remove('hit'),120); tap(); };
+ bk.addEventListener('pointerdown',e=>{ e.preventDefault(); hit(); });
+ KEY=e=>{ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); hit(); } };
+ Object.keys(T).forEach(k=>delete T[k]); Object.assign(T,{on:true,kind:'bus',phase:'wait',t:0,spawn:1.6+Math.random()*2.2,tap:null,z0:z0,a:G.wet===2?3:(G.wet===1?4:5),
+  esc:false,done:false,stopped:false});
+ scrollStage(); }
+
+/* ---------- MODAL CELULAR ---------- */
+function openModal(){ AU.ping(); $('#modal').classList.add('on'); T.modalAt=T.e||0; }
+function closeModal(silent){ const m=$('#modal'); if(!m.classList.contains('on'))return; m.classList.remove('on'); }
+$('#mClose').addEventListener('click',()=>closeModal());
+
+/* ---------- RESULTADO DE LA PRUEBA ---------- */
+function testResult(){ const r=G.res; let d=0,title,body,cls;
+ if(r.kind==='moto'){
+  const ms=r.tap!==null?Math.round(r.tap*1000):null; r.ms=ms;
+  r.need=r.react+(r.vb*r.vb)/(2*r.a); r.avail=42-2.1;
+  if(r.impact){ cls='bad'; title='No alcanzó a frenar.'; body=(r.alone?'No le avisaste a tiempo y Juan reaccionó solo, tarde. ':'Le avisaste, pero ')+'la moto necesitaba '+r.need.toFixed(1)+' metros para detenerse y solo había '+r.avail.toFixed(0)+'. El impacto fue a '+r.vImp+' km/h.'; }
+  else if(r.alone){ d=-10; cls='mid'; title='Juan frenó solo. Por poco.'; body='No alcanzaste a avisarle: Juan vio el carro por su cuenta, tarde, y quedaron a '+r.gap.toFixed(1)+' metros. Esta vez alcanzó. Fue suerte, no margen.'; }
+  else { d=ms<500?5:0; cls=d>0?'good':'mid'; title='Frenaron a tiempo.'; body='Le gritaste a los '+ms+' ms y Juan alcanzó a detener la moto a '+r.gap.toFixed(1)+' metros del carro. Tu atención como copiloto hizo la diferencia.'; }
+ } else {
+  const ms=r.tap!==null?Math.round(r.tap*1000):null; r.ms=ms; r.avail=Math.max(.1,(r.z0-2.1)/12.5); r.used=ms!==null?ms/1000+.35:null;
+  if(r.impact){ cls='bad'; title='No alcanzaste a devolverte.'; body=(ms===null?'No reaccionaste. ':'Reaccionaste a los '+ms+' ms, ')+'pero el carro apareció a solo '+r.z0+' metros. El impacto fue a '+r.vImp+' km/h.'; }
+  else if(r.stopped&&ms===null){ d=5; cls='good'; title='El conductor alcanzó a frenar.'; body='Estabas en la cebra y el conductor esperaba encontrarte ahí: frenó a tiempo. Eso es lo que compra cruzar por donde corresponde.'; }
+  else { d=ms<450?5:0; cls=d>0?'good':'mid'; title='Llegaste al andén.'; body='Te devolviste a los '+ms+' ms y el carro pasó de largo. '+(r.z0<=17?'Apareció muy cerca: un poco más lento y no la cuentas.':'Tenías algo de distancia a tu favor.'); }
+ }
+ if(d){ addMargin(d); }
+ G.log.push({t:'Prueba de reacción: '+(r.impact?'impacto a '+r.vImp+' km/h':(r.ms!==null?r.ms+' ms':'sin reacción')),d:d});
+ G.res.title=title;
+ show('<div class="step">Paso 5 de 6 · Resultado de la prueba</div><h2>'+esc(title)+'</h2><div class="fb '+cls+'" style="margin-top:4px">'+esc(body)+'</div>'+
+  '<button class="btn" id="nx">'+(r.impact?'Ver cómo terminó →':'Seguir →')+'</button>');
+ const nx=$('#nx'); nx.onclick=()=>{ KEY=null; nx.disabled=true; if(r.impact) ending(); else (G.route==='moto'?d6moto:d6bus)(); };
+ KEY=e=>{ if(e.key==='Enter'){ e.preventDefault(); nx.click(); } }; scrollPanel(); }
+
+/* ---------- PASO 6 ---------- */
+function d6moto(){ W.hazard=null; W.todT=.9; W.target=G.speedSet; W.light={X:2.6,z:65,state:'amber'};
+ decision({step:6,title:'Semáforo en amarillo.',
+ text:'Faltan dos cuadras para tu casa. El semáforo acaba de cambiar a amarillo, a unos 30 metros. Juan te pregunta: «¿lo paso?»',
+ opts:[
+  {t:'¡Pásalo!',d:-20,log:'Pasaron el semáforo en amarillo-rojo',
+   fx:fin=>{ W.target=G.speedSet+12; later(()=>{ if(W.light)W.light.state='red'; },700);
+    later(()=>{ W.cross={x:-9,z:10,dir:1,v:16}; AU.horn(); W.flash=.6; W.flashC=[255,200,60]; W.shake=.6; banner('¡CASI!','#ffd166',1200); },1300);
+    later(fin,2600); },
+   f:'Un carro que arrancó con su verde pasó a menos de un metro. “Alcanzo” es la palabra que más se repite en los informes de siniestros.'},
+  {t:'Frena, esperamos el verde.',d:10,log:'Se detuvieron ante el amarillo',
+   fx:fin=>{ W.target=0; later(()=>{ if(W.light)W.light.state='red'; W.cross={x:-9,z:30,dir:1,v:12}; },900); later(()=>{ if(W.light)W.light.state='green'; },3200); later(fin,1200); },
+   f:'Treinta segundos de espera. Ese es el costo real de la decisión correcta, y es el mismo todas las veces.'}],
+ then:()=>{ W.target=G.speedSet; later(()=>{ W.target=0; },1600); later(ending,2600); } }); }
+function d6bus(){ W.hazard=null; W.todT=.9; W.mode='stand'; W.zebra=false; W.bus=null; W.camXT=2.4; W.camRate=2;
+ decision({step:6,title:'Ya ves tu casa.',
+ text:'Falta cruzar una calle de doble sentido, sin semáforo. Viene un carro, pero alcanzas si apuras el paso.',
+ opts:[
+  {t:'Cruzas ya. Alcanzas.',d:-20,log:'Cruzó calculando que alcanzaba',
+   fx:fin=>{ W.camXT=.4; W.camRate=3; later(()=>{ W.hazard={kind:'front',X:-.6,z:20,v:13}; AU.horn(); },300);
+    later(()=>{ W.camXT=-2.5; W.camRate=6; W.flash=.6; W.flashC=[255,200,60]; W.shake=.5; banner('¡PIIIII!','#ffd166',1000); AU.whoosh(); },1150); later(fin,2400); },
+   f:'El carro pasó pitando a menos de un metro. Calcular la velocidad de un vehículo que viene de frente es justo lo que peor hacemos.'},
+  {t:'Esperas a que pase.',d:10,log:'Esperó a que pasara el vehículo',
+   fx:fin=>{ W.hazard={kind:'front',X:-.6,z:40,v:12}; later(fin,1500); },
+   f:'Diez segundos. Ese es el costo real de la decisión correcta.'},
+  {t:'Caminas hasta el reductor y cruzas ahí.',d:10,log:'Cruzó en el punto demarcado',
+   f:'Cruzar donde el conductor te espera vale más que cruzar donde a ti te queda cómodo.'}],
+ then:()=>{ later(ending,500); } }); }
+
+/* ================= FINAL ================= */
+const ENDS={
+ llegaste:{t:'LLEGASTE.',c:'#3ecf8e',x:m=>'Llegaste a tu casa sin una sola situación de riesgo real. No fue suerte: en cada punto del trayecto conservaste tu margen. Cuando se hace bien no pasa nada, y nadie se entera. Esa es exactamente la idea.'},
+ susto:{t:'LLEGASTE, CON SUSTO.',c:'#f5c518',x:m=>'Llegaste, pero hubo al menos un momento en el que todo dependió de que otra persona reaccionara bien. Tu margen quedó en '+m+'%: llegaste usando el margen de alguien más, no el tuyo. La próxima vez puede que esa persona vaya distraída.'},
+ casi:{t:'CASI NO LLEGAS.',c:'#ffb02e',x:m=>'Un frenazo, un pito, alguien que alcanzó a esquivarte. Llegaste a tu casa y probablemente ni lo contaste. Con '+m+'% de margen no quedaba casi nada entre lo que pasó y lo que pudo pasar.'},
+ golpe:{t:'UN GOLPE QUE PUDO SER PEOR.',c:'#ffb02e',x:()=>'El impacto fue a baja velocidad: raspones, un retrovisor roto y un susto que no se olvida. Medio segundo antes y no habría pasado nada. Medio segundo después y esta historia sería otra.'},
+ hospital:{t:'LLEGASTE… A URGENCIAS.',c:'#ff5c4d',x:()=>(G.route==='moto'?'El casco hizo su trabajo: hoy estás en urgencias y no en otro lugar. Pero el casco no evitó el choque. Lo evitaban las decisiones de antes.':'Hoy estás en urgencias. Vas a recuperarte, pero vas a perder meses. Todo se decidió en los minutos anteriores, no en el segundo del impacto.')},
+ nollegaste:{t:'NO LLEGASTE.',c:'#ff5c4d',x:()=>'Esa noche en tu casa no se sentaron a comer: recibieron una llamada. No hubo una sola decisión que lo causara. Hubo varias, y cada una por separado parecía pequeña. Así es como pasa en la vida real: nunca es una sola.'}};
+function ending(){ clearTimers(); KEY=null; T.on=false; G.step=6; hud(); const r=G.res||{}; let k;
+ if(r.impact){ if(G.route==='moto'){ k=r.vImp<20?'golpe':(G.youHelmet&&r.vImp<55?'hospital':'nollegaste'); }
+  else { k=r.vImp<18?'golpe':(r.vImp<32?'hospital':'nollegaste'); } }
+ else k=G.margin>=80?'llegaste':(G.margin>=50?'susto':'casi');
+ G.endKey=k; const E=ENDS[k];
+ if(k==='llegaste'||k==='susto'||k==='casi'){ W.target=0; banner(E.t,E.c,2600); if(k==='llegaste')AU.ok(); }
+ else { W.blackT=k==='nollegaste'?.88:.6; banner(E.t,E.c); }
+ AU.rain(0); W.rainT=Math.min(W.rainT,.25);
+ let h='<div class="ending" style="border-color:'+E.c+';background:'+(k==='llegaste'?'#10322a':(k==='susto'||k==='casi'||k==='golpe'?'#33290f':'#36191a'))+'">'+
+  '<div class="dim" style="font-size:13px">'+esc(G.name)+', tu trayecto terminó así</div><div class="big" style="color:'+E.c+'">'+E.t+'</div><p>'+esc(E.x(G.margin))+'</p></div>';
+ h+='<div class="stats"><div><b>'+G.margin+'%</b><span>margen final</span></div>'+
+  '<div><b>'+(r.ms!==null&&r.ms!==undefined?r.ms+' ms':'—')+'</b><span>tu reacción</span></div>'+
+  '<div><b>'+(r.kind==='moto'?Math.round((r.v0||0)*3.6)+' km/h':(r.z0?r.z0+' m':'—'))+'</b><span>'+(r.kind==='moto'?'velocidad al ver el peligro':'distancia del carro al aparecer')+'</span></div></div>';
+ if(r.kind==='moto'&&r.need){ const mx=Math.max(r.need,r.avail)*1.08,re=r.react,bk=r.need-r.react;
+  h+='<div class="sec-t">Lo que pasó en la frenada</div><div class="diag"><div class="t"><span>Necesitabas '+r.need.toFixed(1)+' m</span><span>Tenías '+r.avail.toFixed(0)+' m</span></div>'+
+   '<div class="track"><i style="background:#f5c518" data-w="'+(re/mx*100)+'"></i><i style="background:'+(r.need>r.avail?'#ff5c4d':'#3ecf8e')+'" data-w="'+(bk/mx*100)+'"></i>'+
+   '<span class="lim" style="left:calc('+(r.avail/mx*100)+'% - 1px)"></span></div>'+
+   '<div class="legend"><span style="--c:#f5c518">Antes de frenar: '+re.toFixed(1)+' m</span><span style="--c:'+(r.need>r.avail?'#ff5c4d':'#3ecf8e')+'">Frenando ('+(G.wet===2?'piso mojado':(G.wet===1?'piso húmedo':'piso seco'))+'): '+bk.toFixed(1)+' m</span><span style="--c:#fff">Carro detenido</span></div></div>'; }
+ else if(r.kind==='bus'&&r.avail){ const used=r.used!==null?r.used:r.avail*1.15,mx=Math.max(used,r.avail)*1.1;
+  h+='<div class="sec-t">Lo que pasó en el cruce</div><div class="diag"><div class="t"><span>Usaste '+(r.used!==null?r.used.toFixed(2)+' s':'—')+'</span><span>Tenías '+r.avail.toFixed(2)+' s</span></div>'+
+   '<div class="track"><i style="background:'+(r.impact?'#ff5c4d':'#3ecf8e')+'" data-w="'+(used/mx*100)+'"></i><span class="lim" style="left:calc('+(r.avail/mx*100)+'% - 1px)"></span></div>'+
+   '<div class="legend"><span style="--c:'+(r.impact?'#ff5c4d':'#3ecf8e')+'">Tu reacción + devolverte</span><span style="--c:#fff">Momento en que el carro llega</span></div></div>'; }
+ h+='<div class="sec-t">Tus decisiones</div>'+G.log.map(l=>'<p class="log '+(l.d<0?(l.d<=-20?'r':'m'):(l.d>0?'g':''))+'">'+esc(l.t)+(l.d?' <em>('+(l.d>0?'+':'')+l.d+'%)</em>':'')+'</p>').join('')+
+  '<p class="dim" style="margin-top:10px">Ninguna de estas decisiones te pareció grave cuando la tomaste. Ese es el punto.</p>';
+ h+='<div class="sec-t">El mensaje</div><div class="bigmsg">Un segundo de distracción no se devuelve. En la vía, el que decide bien, llega.</div>'+
+  '<button class="btn" id="cie">Aprendizaje →</button>'+
+  '<p class="dim" style="margin-top:14px">Toma una captura de esta pantalla y envíala al grupo de la campaña: es tu constancia de participación.</p>'+
+  '<a class="btn wa" id="wa" target="_blank" rel="noopener">Compartir en WhatsApp</a>'+
+  '<div class="row2"><button class="btn sec" id="re">Volver a jugar</button><button class="btn sec" id="cp">Copiar enlace</button></div>'+
+  '<div class="hint">Prueba la otra ruta: '+(G.route==='moto'?'vete en bus':'súbete a la moto')+' y mira qué cambia.</div>';
+ show(h);
+ setTimeout(()=>{ [].forEach.call(panel.querySelectorAll('.track i'),i=>i.style.width=i.dataset.w+'%'); },120);
+ const url=location.href.split('#')[0];
+ const txt='Hice el trayecto de ¿LLEGAS? (campaña Ruta Segura) y terminé así: '+E.t+' Margen final '+G.margin+'%. ¿Tú llegas? '+url;
+ $('#wa').href='https://wa.me/?text='+encodeURIComponent(txt);
+ $('#cie').onclick=closing;
+ $('#re').onclick=restart;
+ $('#cp').onclick=()=>{ const b=$('#cp'); const ok=()=>{ b.textContent='¡Copiado!'; setTimeout(()=>b.textContent='Copiar enlace',1600); };
+  if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(ok,()=>{ b.textContent=url; }); else b.textContent=url; };
+ setTimeout(()=>scrollPanel(panel.firstElementChild),300); }
+
+/* ================= CIERRE PARA LA CLASE ================= */
+const PASOS=[
+ {n:1,t:'La decisión se toma antes de arrancar',
+  r:'Casco certificado para el conductor y para el parrillero, siempre. Ley 769 de 2002 (Código Nacional de Tránsito).',
+  b:['Esta es la única decisión del trayecto que se toma con la cabeza fría, parado, sin presión de tiempo ni de nadie detrás. Todas las demás se toman en movimiento, en segundos.',
+     'El casco no evita el choque: evita que el choque sea lo último que pase. Y un solo casco no alcanza para dos personas, porque el que maneja sin casco pone en riesgo a los dos: si él pierde el conocimiento, la moto se cae con los dos encima.']},
+ {n:2,t:'Zona escolar: 30 no es "más o menos 30"',
+  r:'30 km/h en zonas escolares, residenciales, hospitalarias e intersecciones. 50 km/h en vías urbanas. Ley 2251 de 2022 (Ley Julián Esteban), que modificó el artículo 106 del Código Nacional de Tránsito.',
+  b:['El límite de 30 no es un número administrativo: es el umbral del cuerpo humano. A 30 km/h una persona atropellada normalmente sobrevive; a 50 la probabilidad de que no sobreviva se multiplica.',
+     'Frente a un colegio a la hora de salida, el peligro no entra por el frente: sale de entre los carros parqueados, a la altura de la rodilla, sin mirar.']},
+ {n:3,t:'El celular: dos segundos a ciegas',
+  r:'El celular no se usa en movimiento. Si hay que contestar, se detiene en un lugar seguro y después se sigue.',
+  b:['Mirar la pantalla dos segundos a 50 km/h son casi 28 metros recorridos sin ver nada: media cuadra con los ojos cerrados.',
+     'El problema no es el mensaje, es el momento. El mensaje sigue ahí cinco minutos después; los 28 metros no se devuelven.']},
+ {n:4,t:'Lluvia: el piso cambia, la velocidad también',
+  r:'Con piso mojado: menos velocidad y el doble de distancia con el vehículo de adelante.',
+  b:['Con el piso mojado la distancia de frenado se acerca al doble. El vehículo es el mismo, los frenos son los mismos; lo que cambió fue el agarre.',
+     'Los primeros minutos de lluvia son los peores: el agua levanta el polvo y el aceite del pavimento y lo vuelve una película resbalosa. Ahí es donde se cae la gente que lleva veinte años manejando bien.']},
+ {n:5,t:'Tu tiempo de reacción no se negocia',
+  r:'Dos segundos de distancia con el vehículo de adelante. Tres cuando llueve.',
+  b:['Reaccionar toma entre 0,7 y 1,5 segundos a una persona atenta y descansada. En la prueba del juego cada uno midió el suyo: nadie bajó de ahí, y nadie lo puede entrenar para que desaparezca.',
+     'En ese segundo el vehículo no ha frenado ni un metro: solo ha avanzado. Lo único que podemos decidir es a qué velocidad llega ese segundo.']},
+ {n:6,t:'Cruzar donde te esperan, no donde te queda cómodo',
+  r:'Paso peatonal, puente o cebra, con el semáforo a favor. El amarillo es para detenerse, no para alcanzar a pasar.',
+  b:['El conductor frena por lo que espera encontrar. En el paso demarcado te está esperando; cincuenta metros antes, no.',
+     'Cruzar por el puente cuesta diez segundos más. Devolverse de la mitad de la avenida porque calculaste mal cuesta todo lo demás.']}];
+
+const CONSEJOS=[
+ {i:'\u{1FA96}',t:'Decide antes de subirte',d:'Casco, quién maneja, por dónde van. Parado es fácil decir que no; a 60 km/h ya no se puede decir nada.'},
+ {i:'\u{1F4F5}',t:'El celular, guardado',d:'En el bolsillo o en el bolso, no en la mano. Si de verdad hay que contestar, se para en un lugar seguro.'},
+ {i:'\u{1F40C}',t:'Baja 10 km/h y ganas todo',d:'Diez kilómetros por hora menos casi no cambian la hora de llegada, pero recortan metros enteros de frenada.'},
+ {i:'\u{1F4A1}',t:'Hazte ver',d:'Luz encendida de día, ropa clara de noche, y nunca al lado de un bus o un camión: si no te ve por el espejo, no existes.'},
+ {i:'⏱',t:'Sal cinco minutos antes',d:'Casi todas las decisiones malas de la vía empiezan con la misma frase: "voy tarde". Esos cinco minutos son el margen más barato que existe.'}];
+
+const PACTO=['Me subo solo con casco, y le exijo casco a quien maneja.',
+ 'Si me escriben mientras voy en la vía, contesto cuando esté parado.',
+ 'En zona escolar bajo a 30, aunque nadie me esté mirando.',
+ 'Cruzo por el paso demarcado, aunque me toque caminar media cuadra más.',
+ 'Cuando llueve salgo con más tiempo y voy más despacio.'];
+
+const PREGUNTAS=['¿Cuál de las seis decisiones es la más fácil de tomar mal en la vida real? ¿Por qué esa?',
+ '¿Qué pasó con tu margen la primera vez que pensaste "es cerquita, son diez minutos"?',
+ 'Cuando el parrillero va sin casco, ¿de quién es la responsabilidad: del que maneja o del que se sube?',
+ '¿A quién conoces que contesta el celular manejando? ¿Qué le dirías hoy, después de ver los metros?',
+ 'Si pudieras devolver una sola decisión de tu trayecto, ¿cuál sería y qué harías distinto?'];
+
+function distHTML(){
+ const g=9.81, tr=1.0, VS=[[30,'Zona escolar y residencial'],[50,'Vía urbana'],[60,'"Iba apenas un poquito más rápido"']];
+ const rows=[]; let mx=0;
+ for(let i=0;i<VS.length;i++){ const ms=VS[i][0]/3.6, re=ms*tr, bs=ms*ms/(2*.7*g), bw=ms*ms/(2*.4*g);
+  rows.push({v:VS[i][0],sub:VS[i][1],re:re,bs:bs,bw:bw,ts:re+bs,tw:re+bw}); if(re+bw>mx)mx=re+bw; }
+ mx*=1.02;
+ const f=n=>n.toFixed(1).replace('.',',')+' m', pc=n=>(n/mx*100);
+ let h='<div class="dist">';
+ for(let i=0;i<rows.length;i++){ const r=rows[i];
+  h+='<div class="r"><div class="rh"><span>'+r.v+' km/h</span><i>'+r.sub+'</i></div><div class="bars">'+
+   '<div class="bl"><span class="t">Seco</span><span class="bw"><i style="background:#f5c518" data-w="'+pc(r.re)+'"></i><i style="background:#3ecf8e" data-w="'+pc(r.bs)+'"></i></span><em>'+f(r.ts)+'</em></div>'+
+   '<div class="bl"><span class="t">Mojado</span><span class="bw"><i style="background:#f5c518" data-w="'+pc(r.re)+'"></i><i style="background:#ff5c4d" data-w="'+pc(r.bw)+'"></i></span><em>'+f(r.tw)+'</em></div>'+
+   '</div></div>'; }
+ h+='</div><div class="legend"><span style="--c:#f5c518">Mientras reaccionas (1 s): el vehículo no ha frenado nada</span><span style="--c:#3ecf8e">Frenando en seco</span><span style="--c:#ff5c4d">Frenando en mojado</span></div>';
+ return h;
+}
+
+function closing(){
+ const b=$('#cie');
+ if($('#cieCard')){ scrollPanel($('#cieCard')); return; }
+ if(b){ b.textContent='Cierre de la campaña ↓'; b.classList.add('sec'); }
+ let h='<div class="step">Aprendizaje</div><h2>Lo que deja el trayecto</h2>'+
+  '<div class="cie-top">Hasta aquí se juega solo. Esta parte se habla: son unos 10 minutos y es donde el juego se vuelve aprendizaje. Nadie tuvo mala suerte en el trayecto. Hubo seis decisiones, y cada una tenía una regla detrás.</div>';
+
+ h+='<div class="sec-t">Las seis decisiones, una por una</div>';
+ for(let i=0;i<PASOS.length;i++){ const p=PASOS[i];
+  h+='<details class="ac"><summary><span class="n">'+p.n+'</span><span>'+p.t+'</span></summary><div class="acb">'+
+   '<span class="rule">La regla</span><p>'+p.r+'</p><span class="rule">Por qué importa</span>'+
+   p.b.map(x=>'<p>'+x+'</p>').join('')+'</div></details>'; }
+
+ h+='<div class="sec-t">La cuenta que nadie hace</div>'+
+  '<p>Esto es lo que recorre un vehículo entre el momento en que aparece el peligro y el momento en que queda quieto. No depende del valor de nadie: depende de la velocidad y del piso.</p>'+
+  distHTML()+
+  '<p class="dim" style="margin-top:10px">A 60 km/h con piso mojado se necesitan más de 50 metros: casi una cuadra entera. Eso es lo que hay entre "alcancé a frenar" y "no alcancé".</p>';
+
+ h+='<div class="sec-t">Cinco cosas que se pueden hacer desde mañana</div><div class="tipg">'+
+  CONSEJOS.map(c=>'<div class="tip"><span class="ic">'+c.i+'</span><span><b>'+c.t+'</b><span>'+c.d+'</span></span></div>').join('')+'</div>';
+
+ h+='<div class="sec-t">Esto no es un juego: pasa en Colombia</div>'+
+  '<div class="stats"><div><b>63%</b><span>de las muertes en la vía son de motociclistas (2025)</span></div>'+
+  '<div><b>22%</b><span>son peatones: gente que iba caminando</span></div>'+
+  '<div><b>49%</b><span>de los motociclistas fallecidos tenía entre 15 y 34 años</span></div></div>'+
+  '<p class="dim">En 2025 murieron 5.652 motociclistas en el país. Ninguno salió de su casa pensando que ese día le tocaba a él.</p>';
+
+ h+='<div class="sec-t">Para discutir en voz alta</div><ol class="qs">'+PREGUNTAS.map(q=>'<li>'+q+'</li>').join('')+'</ol>';
+
+ h+='<div class="sec-t">Mi compromiso</div><p>Marca solo lo que de verdad vas a cumplir. Uno cumplido vale más que cinco escritos.</p><div class="pact">'+
+  PACTO.map((p,i)=>'<label class="pk" data-i="'+i+'"><input type="checkbox"><span>'+p+'</span></label>').join('')+'</div>'+
+  '<button class="btn" id="firm" disabled>Firmar mi compromiso</button><div id="fbox"></div>';
+
+ h+='<div class="sec-t">Para quien dirige la actividad</div><details class="ac"><summary><span class="n">\u{1F3AF}</span><span>Guía rápida de la sesión (25 a 30 minutos)</span></summary><div class="acb"><div class="guide">'+
+  '<div class="g"><b>Objetivo</b>Que el participante entienda que un siniestro vial no es un accidente repentino, sino el resultado de varias decisiones pequeñas que se pueden reconocer y cambiar a tiempo.</div>'+
+  '<div class="g"><b>Público</b>Jóvenes de 14 a 25 años, conductores nuevos, parrilleros y peatones. Funciona igual con padres de familia.</div>'+
+  '<div class="g"><b>Momento 1 · Enganche (3 min)</b>Pregunta en voz alta, con la mano levantada: ¿quién se ha subido de parrillero sin casco porque era cerquita? Nadie explica nada todavía.</div>'+
+  '<div class="g"><b>Momento 2 · El juego (10 min)</b>Cada uno en su celular, en silencio y sin comentar las decisiones. El silencio es parte de la actividad: así nadie copia la respuesta correcta.</div>'+
+  '<div class="g"><b>Momento 3 · Comparar finales (5 min)</b>Que levanten la mano por final: quién llegó, quién llegó con susto, quién no llegó. Pregunta quién terminó con más del 80% de margen y qué hizo distinto.</div>'+
+  '<div class="g"><b>Momento 4 · Cierre (8 min)</b>Las seis decisiones y la tabla de distancias, en voz alta. El dato que más pega es el de los metros, no el de los muertos.</div>'+
+  '<div class="g"><b>Momento 5 · Compromiso (4 min)</b>Cada uno marca su pacto y lo comparte. Quien quiera, lo lee en voz alta.</div>'+
+  '<div class="g"><b>Materiales</b>Un celular con internet por participante (o uno solo proyectado), sonido activado y el enlace del juego.</div>'+
+  '<div class="g"><b>Evaluación</b>No se evalúa el final que le salió a cada uno: se evalúa la justificación. Pide que cada participante explique una decisión que cambiaría y por qué.</div>'+
+  '<div class="g"><b>Variación</b>Que la segunda vuelta la hagan por la otra ruta (quien fue en moto, que se vaya en bus) y comparen qué riesgos cambian y cuáles son los mismos.</div>'+
+  '</div></div></details>';
+
+ h+='<div class="bigmsg" style="margin-top:16px">Nadie decide tener un accidente. Lo que sí decidimos es con cuánto margen llegamos a él.</div>'+
+  '<div class="row2"><a class="btn wa" id="wa2" target="_blank" rel="noopener">Compartir la campaña</a><button class="btn sec" id="re2">Volver a jugar</button></div>'+
+  '<div class="srcs">Fuentes de las cifras: Observatorio Nacional de Seguridad Vial, Agencia Nacional de Seguridad Vial (<a href="https://www.ansv.gov.co/es/observatorio/estad%C3%ADsticas" target="_blank" rel="noopener">ansv.gov.co</a>) y el estudio <i>Más motos, más muertes: cuatro décadas de mortalidad vial en Colombia</i>, Fundación Colombia Tiene Futuro (2026), con datos de 2025. Marco normativo: Ley 769 de 2002 y Ley 2251 de 2022. Las distancias de frenado se calculan con un tiempo de reacción de 1 segundo y coeficientes de fricción de 0,7 en seco y 0,4 en mojado.</div>';
+
+ const d=document.createElement('div'); d.className='card'; d.id='cieCard'; d.innerHTML=h; panel.appendChild(d);
+ setTimeout(()=>{ [].forEach.call(d.querySelectorAll('.bw i'),i=>i.style.width=i.dataset.w+'%'); },140);
+
+ const ks=[].slice.call(d.querySelectorAll('.pk')), firm=d.querySelector('#firm');
+ const sync=()=>{ let n=0; ks.forEach(k=>{ const c=k.querySelector('input').checked; k.classList.toggle('on',c); if(c)n++; });
+  firm.disabled=n===0; firm.textContent=n===0?'Firmar mi compromiso':'Firmar mi compromiso ('+n+' de '+PACTO.length+')'; };
+ ks.forEach(k=>k.querySelector('input').addEventListener('change',sync));
+ firm.onclick=()=>{ const sel=[]; ks.forEach((k,i)=>{ if(k.querySelector('input').checked) sel.push(PACTO[i]); });
+  if(!sel.length)return; AU.ok();
+  d.querySelector('#fbox').innerHTML='<div class="fb good" style="margin-top:12px"><b>'+esc(G.name)+', este es tu compromiso</b>'+
+   sel.map(s=>'✓ '+esc(s)).join('<br>')+'</div><p class="dim" style="margin-top:10px">Toma una captura de este recuadro: es tu evidencia de participación en la campaña.</p>';
+  firm.textContent='Compromiso firmado ✓'; firm.disabled=true;
+  scrollPanel(d.querySelector('#fbox')); };
+
+ const url=location.href.split('#')[0];
+ d.querySelector('#wa2').href='https://wa.me/?text='+encodeURIComponent('Campaña Ruta Segura: seis decisiones, un trayecto del colegio a la casa. ¿Tú llegas? '+url);
+ d.querySelector('#re2').onclick=restart;
+ setTimeout(()=>scrollPanel(d),200);
+}
+
+/* ================= ARRANQUE ================= */
+$('#mute').onclick=()=>{ muted=!muted; $('#mute').textContent=muted?'🔇':'🔊'; AU.init(); AU.resume(); AU.vol(muted); };
+document.addEventListener('visibilitychange',()=>{ if(document.hidden&&AU.c) AU.c.suspend(); else if(AU.c&&!muted) AU.c.resume(); });
+resize(); intro(); requestAnimationFrame(frame);
+window.__RS={G,W,T,tap,closeModal};
+})();
+</script>
+</body>
+</html>
